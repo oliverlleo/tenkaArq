@@ -196,54 +196,55 @@
         .table-container { background-color: transparent; padding: 0; box-shadow: none; border: none; }
         .table-container:hover { transform: none; box-shadow: none; }
 
-        /* Mobile specific table styling for tabela-detalhes-cliente */
-        @media (max-width: 767px) {
-            #tabela-detalhes-cliente, #tabela-detalhes-cliente thead, #tabela-detalhes-cliente tbody, #tabela-detalhes-cliente th, #tabela-detalhes-cliente td, #tabela-detalhes-cliente tr {
-                display: block;
+        /* --- [CORREÇÃO] Mobile-First Responsive Styles for #tabela-detalhes-cliente --- */
+        /* Esta abordagem define os estilos para celular como padrão e, em seguida, os ajusta para telas maiores. */
+
+        /* Por padrão (mobile), esconda a linha de desktop e o cabeçalho da tabela. */
+        #tabela-detalhes-cliente .desktop-row,
+        #modal-detalhes-cliente thead {
+            display: none;
+        }
+
+        /* Por padrão (mobile), a linha do card é um bloco. */
+        #tabela-detalhes-cliente .mobile-card {
+            display: block;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            background-color: var(--bg-container);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+        }
+
+        /* A célula dentro do card também é um bloco para que o conteúdo flua verticalmente. */
+        #tabela-detalhes-cliente .mobile-card td {
+            display: block;
+            padding: 0;
+            border: none;
+        }
+
+        /* --- Estilos para Desktop (a partir de 768px) --- */
+        @media (min-width: 768px) {
+            /* Mostra o cabeçalho no desktop */
+            #modal-detalhes-cliente thead {
+                display: table-header-group;
             }
-            #tabela-detalhes-cliente thead tr {
-                position: absolute;
-                top: -9999px;
-                left: -9999px;
+
+            /* Esconde o card de celular no desktop */
+            #tabela-detalhes-cliente .mobile-card {
+                display: none;
             }
-            #tabela-detalhes-cliente tbody tr {
-                margin-bottom: 1rem;
-                border: 1px solid var(--border-color);
-                border-radius: 12px;
-                padding: 1rem;
-                display: flex; /* Use flexbox for stacking */
-                flex-direction: column;
+
+            /* Mostra a linha de desktop e a estiliza como uma linha de tabela padrão */
+            #tabela-detalhes-cliente .desktop-row {
+                display: table-row;
             }
-            #tabela-detalhes-cliente tbody td {
-                border: none;
-                position: relative;
-                padding-left: 0; /* Remove left padding */
-                text-align: left; /* Align text left */
-                padding-top: 0.5rem;
-                padding-bottom: 0.5rem;
-            }
-            #tabela-detalhes-cliente tbody td:first-child,
-            #tabela-detalhes-cliente tbody td:last-child {
-                border-radius: 0; /* Remove specific border radius for stacked cells */
-            }
-            #tabela-detalhes-cliente tbody td::before {
-                content: attr(data-label);
-                font-weight: bold;
-                display: block; /* Make label a block element */
-                margin-bottom: 0.25rem;
-                color: var(--text-secondary);
-                font-size: 0.875rem; /* text-sm */
-            }
-            /* Specific adjustments for the content within table cells when stacked */
-            #tabela-detalhes-cliente td p {
-                text-align: left;
-            }
-            #tabela-detalhes-cliente td .status-badge {
-                display: inline-block; /* Keep badge inline */
-            }
-            #tabela-detalhes-cliente td .flex.items-center.space-x-2 {
-                justify-content: flex-start; /* Align action buttons to start */
-                margin-top: 0.5rem;
+
+            /* Restaura o estilo das células para a linha de desktop */
+            #tabela-detalhes-cliente .desktop-row td {
+                display: table-cell;
+                padding: 1rem 1.5rem; /* Padding original da tabela */
+                vertical-align: middle;
             }
         }
 
@@ -273,7 +274,7 @@
             font-weight: 600;
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap;
+            white-space: nowrap; /* Garante que o texto não quebre */
         }
         .calendar-task strong { font-weight: 700; }
         .view-btn-active {
@@ -483,8 +484,8 @@
         <!-- Sidebar de Navegação -->
         <!-- Added fixed, inset-y-0, left-0, z-500, transform classes for mobile -->
         <aside id="main-sidebar" class="w-64 sidebar text-white flex flex-col flex-shrink-0
-                                       md:static md:translate-x-0 transition-transform duration-300 ease-in-out
-                                       fixed inset-y-0 left-0 z-500 -translate-x-full">
+                                         md:static md:translate-x-0 transition-transform duration-300 ease-in-out
+                                         fixed inset-y-0 left-0 z-500 -translate-x-full">
             <div class="p-6 text-left">
                 <h2 class="text-2xl font-semibold uppercase">Controle de Obras</h2>
             </div>
@@ -1124,13 +1125,21 @@
                 };
                 const statusInfo = statusMap[compra.status] || statusMap['nao-iniciado'];
 
+                // Generate color for responsible
+                const responsibleBgColor = generateColorFromString(compra.responsavel || 'N/A');
+                const responsibleTextColor = getTextColorForBg(responsibleBgColor);
+
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td class="whitespace-nowrap text-sm font-medium text-primary">${index + 1}</td>
                     <td class="whitespace-nowrap text-sm text-secondary">${cliente?.nome || 'N/A'}</td>
                     <td class="whitespace-nowrap text-sm font-medium text-primary">${compra.servico}</td>
                     <td class="whitespace-nowrap text-sm text-secondary">${compra.ambiente || 'N/A'}</td>
-                    <td class="whitespace-nowrap text-sm text-secondary">${compra.responsavel || 'N/A'}</td>
+                    <td class="whitespace-nowrap text-sm">
+                        <span class="status-badge" style="background-color: ${responsibleBgColor}; color: ${responsibleTextColor};">
+                            ${compra.responsavel || 'N/A'}
+                        </span>
+                    </td>
                     <td class="whitespace-nowrap text-sm text-secondary">${formatDate(compra.inicioPrevisto)} - ${formatDate(compra.terminoPrevisto)}</td>
                     <td class="whitespace-nowrap text-sm text-secondary">${calculateDays(compra.inicioPrevisto, compra.terminoPrevisto)}</td>
                     <td class="whitespace-nowrap text-sm">
@@ -1165,9 +1174,9 @@
                 const gastoTotal = allCompras.filter(compra => compra.clienteId === c.id).reduce((acc, item) => acc + item.valor, 0);
                 c.gastoTotal = gastoTotal;
                 return (!filtroNome || c.nome.toLowerCase().includes(filtroNome)) &&
-                                        (!filtroCpf || (c.cpf && c.cpf.toLowerCase().includes(filtroCpf))) &&
-                                        (!filtroCondominio || (c.condominio && c.condominio.toLowerCase().includes(filtroCondominio))) &&
-                                        (!filtroCidade || (c.cidade && c.cidade.toLowerCase().includes(filtroCidade)));
+                                     (!filtroCpf || (c.cpf && c.cpf.toLowerCase().includes(filtroCpf))) &&
+                                     (!filtroCondominio || (c.condominio && c.condominio.toLowerCase().includes(filtroCondominio))) &&
+                                     (!filtroCidade || (c.cidade && c.cidade.toLowerCase().includes(filtroCidade)));
             });
 
             if (filteredClientes.length === 0) {
@@ -1208,7 +1217,7 @@
                 f.categoriaNome = categoria?.nome || 'N/A';
 
                 return (!filtroNome || f.nome.toLowerCase().includes(filtroNome)) &&
-                                        (!filtroCategoria || f.categoriaId === filtroCategoria);
+                                     (!filtroCategoria || f.categoriaId === filtroCategoria);
             });
 
             if (filteredFornecedores.length === 0) {
@@ -1325,7 +1334,7 @@
             document.getElementById('detalhes-cliente-saldo').textContent = formatCurrency(saldo);
             
             const tbody = document.getElementById('tabela-detalhes-cliente');
-            tbody.innerHTML = '';
+            tbody.innerHTML = ''; // Clear existing content
 
             if (comprasCliente.length === 0) {
                  tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-secondary">Nenhum item para este cliente.</td></tr>`;
@@ -1343,25 +1352,26 @@
                     };
                     const statusInfo = statusMap[item.status] || statusMap['nao-iniciado'];
 
-                    const row = document.createElement('tr');
-                    // Added data-label attributes for mobile table transformation
-                    row.innerHTML = `
-                        <td class="align-middle break-words" data-label="Item">
+                    // Desktop row structure
+                    const desktopRow = document.createElement('tr');
+                    desktopRow.className = 'desktop-row'; // Class to hide on mobile
+                    desktopRow.innerHTML = `
+                        <td class="align-middle break-words">
                             <p class="text-sm font-semibold text-primary">${item.servico}</p>
                             <p class="text-xs text-secondary">${item.descricao || 'Sem descrição'}</p>
                             <p class="text-xs text-secondary mt-1"><strong>Ambiente:</strong> ${item.ambiente || 'N/A'} | <strong>Resp:</strong> ${item.responsavel || 'N/A'}</p>
                         </td>
-                           <td class="align-middle break-words text-sm text-secondary" data-label="Datas">
+                        <td class="align-middle break-words text-sm text-secondary">
                             <p><strong>Compra:</strong> ${formatDate(item.dataCompra)}</p>
                             <p><strong>Entrega:</strong> ${formatDate(item.prazoEntrega)}</p>
                             <p><strong>Previsto:</strong> ${formatDate(item.inicioPrevisto)} a ${formatDate(item.terminoPrevisto)} (${calculateDays(item.inicioPrevisto, item.terminoPrevisto)})</p>
                         </td>
-                        <td class="align-middle break-words text-sm font-semibold text-primary" data-label="Valor">${formatCurrency(item.valor)}</td>
-                        <td class="align-middle break-words text-sm ${percentualColorClass}" data-label="% Orçam.">${percentual.toFixed(1)}%</td>
-                        <td class="align-middle" data-label="Status">
+                        <td class="align-middle break-words text-sm font-semibold text-primary">${formatCurrency(item.valor)}</td>
+                        <td class="align-middle break-words text-sm ${percentualColorClass}">${percentual.toFixed(1)}%</td>
+                        <td class="align-middle">
                             <span class="status-badge ${statusInfo.color}">${statusInfo.text}</span>
                         </td>
-                        <td class="align-middle" data-label="Ações">
+                        <td class="align-middle">
                             <div class="flex items-center space-x-2 text-lg">
                                 ${item.status !== 'em-andamento' ? `<button title="Em Andamento" data-id="${item.id}" data-status="em-andamento" class="btn-status-change text-blue-600 hover:text-blue-800"><i class="fa-solid fa-play"></i></button>` : ''}
                                 ${item.status !== 'parado' ? `<button title="Parado" data-id="${item.id}" data-status="parado" class="btn-status-change text-yellow-500 hover:text-yellow-700"><i class="fa-solid fa-pause"></i></button>` : ''}
@@ -1372,7 +1382,41 @@
                             </div>
                         </td>
                     `;
-                    tbody.appendChild(row);
+                    tbody.appendChild(desktopRow);
+
+                    // Mobile card structure
+                    const mobileCard = document.createElement('tr');
+                    mobileCard.className = 'mobile-card'; // Class to hide on desktop
+                    mobileCard.innerHTML = `
+                        <td class="align-middle break-words">
+                            <div class="flex flex-col">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h3 class="text-base font-semibold text-primary">${item.servico}</h3>
+                                    <span class="status-badge ${statusInfo.color}">${statusInfo.text}</span>
+                                </div>
+                                <p class="text-xs text-secondary">${item.descricao || 'Sem descrição'}</p>
+                                <p class="text-xs text-secondary mt-1"><strong>Ambiente:</strong> ${item.ambiente || 'N/A'} | <strong>Responsável:</strong> ${item.responsavel || 'N/A'}</p>
+                                
+                                <div class="grid grid-cols-2 gap-y-1 text-sm text-secondary my-3 border-t border-b border-border-color py-2">
+                                    <div><strong>Valor:</strong> <span class="font-semibold text-primary">${formatCurrency(item.valor)}</span></div>
+                                    <div><strong>% Orçam.:</strong> <span class="${percentualColorClass}">${percentual.toFixed(1)}%</span></div>
+                                    <div class="col-span-2"><strong>Compra:</strong> ${formatDate(item.dataCompra)}</div>
+                                    <div class="col-span-2"><strong>Entrega:</strong> ${formatDate(item.prazoEntrega)}</div>
+                                    <div class="col-span-2"><strong>Previsto:</strong> ${formatDate(item.inicioPrevisto)} a ${formatDate(item.terminoPrevisto)} (${calculateDays(item.inicioPrevisto, item.terminoPrevisto)})</p>
+                                </div>
+
+                                <div class="flex flex-nowrap items-center justify-end gap-2 text-lg mt-2">
+                                    ${item.status !== 'em-andamento' ? `<button title="Em Andamento" data-id="${item.id}" data-status="em-andamento" class="btn-status-change text-blue-600 hover:text-blue-800 p-1 rounded-full"><i class="fa-solid fa-play"></i></button>` : ''}
+                                    ${item.status !== 'parado' ? `<button title="Parado" data-id="${item.id}" data-status="parado" class="btn-status-change text-yellow-500 hover:text-yellow-700 p-1 rounded-full"><i class="fa-solid fa-pause"></i></button>` : ''}
+                                    ${item.status !== 'interrompido' ? `<button title="Interrompido" data-id="${item.id}" data-status="interrompido" class="btn-status-change text-orange-500 hover:text-orange-700 p-1 rounded-full"><i class="fa-solid fa-triangle-exclamation"></i></button>` : ''}
+                                    ${item.status !== 'atrasado' ? `<button title="Atrasado" data-id="${item.id}" data-status="atrasado" class="btn-status-change text-red-500 hover:text-red-700 p-1 rounded-full"><i class="fa-solid fa-clock"></i></button>` : ''}
+                                    ${item.status !== 'finalizado' ? `<button title="Finalizado" data-id="${item.id}" data-status="finalizado" class="btn-status-change text-green-600 hover:text-green-800 p-1 rounded-full"><i class="fa-solid fa-check-double"></i></button>` : ''}
+                                    <button title="Excluir" data-id="${item.id}" class="btn-delete-compra text-gray-500 hover:text-red-600 p-1 rounded-full"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(mobileCard);
                 });
             }
 
@@ -1491,7 +1535,7 @@
                 tasksContainer.className = 'mt-2 space-y-1';
 
                 const tasksForDay = allCompras.filter(compra => {
-                    if (compra.clienteId !== clienteId || !compra.inicioPrevisto || !compra.terminoPrevisto) return false;
+                    if (!compra.inicioPrevisto || !compra.terminoPrevisto) return false;
                     const inicio = new Date(compra.inicioPrevisto + 'T00:00:00');
                     const termino = new Date(compra.terminoPrevisto + 'T00:00:00');
                     return day >= inicio && day <= termino;
@@ -1506,8 +1550,8 @@
                     taskEl.style.backgroundColor = bgColor;
                     taskEl.style.color = textColor;
                     taskEl.style.borderColor = textColor === '#ffffff' ? 'transparent' : '#4a403a';
-                    taskEl.innerHTML = `${task.servico} <strong class="opacity-75">(${task.responsavel || 'N/A'})</strong>`;
-                    taskEl.title = `${cliente?.nome || ''} - ${task.servico} (${task.responsavel || 'N/A'}) - ${task.descricao || ''}`;
+                    taskEl.innerHTML = `<strong>${cliente ? cliente.nome.split(' ')[0] : '??'}:</strong> ${task.servico}`;
+                    taskEl.title = `${cliente ? cliente.nome : ''} - ${task.servico}: ${task.descricao || ''}`;
                     tasksContainer.appendChild(taskEl);
                 });
                 
@@ -1528,7 +1572,7 @@
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
             const tasksForMonth = allCompras.filter(compra => {
-                if (compra.clienteId !== clienteId || !compra.inicioPrevisto || !compra.terminoPrevisto) return false;
+                if (!compra.inicioPrevisto || !compra.terminoPrevisto) return false;
                 const inicio = new Date(compra.inicioPrevisto + 'T00:00:00');
                 const termino = new Date(compra.terminoPrevisto + 'T00:00:00');
                 return (inicio.getMonth() === month && inicio.getFullYear() === year) || 
@@ -1545,7 +1589,9 @@
                 dayCell.className = 'border border-border-color rounded p-1 min-h-[100px] flex flex-col';
                 
                 const dayNumber = document.createElement('span');
-                dayNumber.className = 'text-xs text-secondary';
+                // Corrected isToday check for monthly calendar
+                const isToday = new Date(year, month, i).toDateString() === new Date().toDateString();
+                dayNumber.className = `text-xs ${isToday ? 'text-primary' : 'text-secondary'}`; 
                 dayNumber.textContent = i;
                 dayCell.appendChild(dayNumber);
 
@@ -1568,8 +1614,8 @@
                     taskEl.style.backgroundColor = bgColor;
                     taskEl.style.color = textColor;
                     taskEl.style.borderColor = textColor === '#ffffff' ? 'transparent' : '#4a403a';
-                    taskEl.innerHTML = `${task.servico} <strong class="opacity-75">(${task.responsavel || 'N/A'})</strong>`;
-                    taskEl.title = `${cliente?.nome || ''} - ${task.servico} (${task.responsavel || 'N/A'}) - ${task.descricao || ''}`;
+                    taskEl.innerHTML = `<strong>${cliente ? cliente.nome.split(' ')[0] : '??'}:</strong> ${task.servico}`;
+                    taskEl.title = `${cliente ? cliente.nome : ''} - ${task.servico}: ${task.descricao || ''}`;
                     tasksContainer.appendChild(taskEl);
                 });
 
@@ -1666,16 +1712,12 @@
             }
 
             for (let i = 1; i <= daysInMonth; i++) {
-                const day = new Date(year, month, i);
-                const isToday = day.toDateString() === todayDate.toDateString();
                 const dayCell = document.createElement('div');
-                dayCell.className = `border rounded p-1 min-h-[110px] flex flex-col ${isToday ? '' : 'border-border-color'}`;
-                   if(isToday) {
-                    dayCell.style.backgroundColor = 'rgba(138, 90, 68, 0.4)';
-                }
+                dayCell.className = 'border border-border-color rounded p-1 min-h-[100px] flex flex-col';
                 
                 const dayNumber = document.createElement('span');
-                dayNumber.className = `text-xs ${isToday ? 'text-primary' : 'text-secondary'}`;
+                const isToday = new Date(year, month, i).toDateString() === todayDate.toDateString(); // Corrected isToday check
+                dayNumber.className = `text-xs ${isToday ? 'text-primary' : 'text-secondary'}`; 
                 dayNumber.textContent = i;
                 dayCell.appendChild(dayNumber);
 
@@ -1691,8 +1733,8 @@
                 });
                 
                 tasksForDay.forEach(task => {
-                    const cliente = allClientes.find(c => c.id === task.clienteId);
                     const taskEl = document.createElement('div');
+                    const cliente = allClientes.find(c => c.id === task.clienteId);
                     const bgColor = generateColorFromString(cliente?.nome || 'default');
                     const textColor = getTextColorForBg(bgColor);
                     taskEl.className = 'calendar-task';
