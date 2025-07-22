@@ -424,6 +424,20 @@
             border-radius: 18px;
             border-bottom-left-radius: 4px;
         }
+        .bot-bubble p {
+            margin: 0;
+            padding: 0;
+        }
+        .bot-bubble p + p {
+            margin-top: 0.5rem;
+        }
+        .bot-bubble ul {
+            margin: 0.5rem 0;
+            padding-left: 1.25rem;
+        }
+        .bot-bubble li {
+            margin-bottom: 0.25rem;
+        }
         .bot-bubble.loading {
             padding: 0.8rem 1rem;
         }
@@ -733,7 +747,7 @@
                 <div class="max-w-screen-lg mx-auto">
                     <header class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
                         <img src="logo.png" alt="Logo" class="h-10 md:h-12" onerror="this.onerror=null;this.src='https://placehold.co/150x50/1a1f1b/FFFFFF?text=Logo';">
-                        <div class="text-center sm:text-left">
+                        <div class="text-center">
                             <h1 class="text-xl md:text-3xl font-bold text-white">Tarefas de: <span id="responsavel-nome-titulo"></span></h1>
                             <p class="text-gray-300 text-sm md:text-base">Acesso restrito às suas tarefas pendentes.</p>
                         </div>
@@ -747,9 +761,9 @@
                         <p class="text-sm text-secondary">Tarefas Pendentes</p>
                         <p class="text-3xl md:text-4xl font-bold" id="responsavel-total-tarefas">0</p>
                     </div>
-                    <div class="content-card text-center">
+                    <div class="content-card text-center flex flex-col justify-center">
                         <p class="text-sm text-secondary">Próxima Tarefa a Vencer</p>
-                        <p class="text-lg md:text-xl font-bold" id="responsavel-proxima-tarefa">N/A</p>
+                        <p class="text-lg md:text-xl font-bold break-words" id="responsavel-proxima-tarefa">N/A</p>
                     </div>
                     <div class="content-card text-center">
                         <p class="text-sm text-secondary">Clientes Ativos</p>
@@ -2074,14 +2088,46 @@
             };
         });
 
+        const formatBotMessage = (text) => {
+            // A simple markdown to HTML converter
+            const escapedText = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            let html = escapedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            const lines = html.split('\n');
+            let result = '';
+            let inList = false;
+            for (const line of lines) {
+                const trimmedLine = line.trim();
+                if (trimmedLine.startsWith('* ') || trimmedLine.startsWith('- ')) {
+                    if (!inList) {
+                        result += '<ul>';
+                        inList = true;
+                    }
+                    result += `<li>${trimmedLine.substring(2)}</li>`;
+                } else {
+                    if (inList) {
+                        result += '</ul>';
+                        inList = false;
+                    }
+                    if (trimmedLine) {
+                        result += `<p>${trimmedLine}</p>`;
+                    }
+                }
+            }
+            if (inList) {
+                result += '</ul>';
+            }
+            return result.replace(/<p><ul>/g, '<ul>').replace(/<\/ul><\/p>/g, '</ul>');
+        };
+
         const addMessage = (text, sender, icon = 'hello.png') => {
             const messageElement = document.createElement('div');
             messageElement.classList.add('chat-message', sender);
 
             if (sender === 'bot') {
+                const formattedText = formatBotMessage(text);
                 messageElement.innerHTML = `
                     <img src="${icon}" alt="Tenky.AI" class="bot-icon" onerror="this.onerror=null;this.src='https://placehold.co/32x32/f9f8f4/4a403a?text=AI';">
-                    <div class="bot-bubble">${text}</div>
+                    <div class="bot-bubble">${formattedText}</div>
                 `;
             } else {
                 messageElement.textContent = text;
