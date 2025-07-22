@@ -1,0 +1,2053 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Compra e Controle de Obras</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* --- PALETA BIOFÍLICA --- */
+        :root {
+            --bg-main: #f9f8f4; /* Papel reciclado / Areia clara */
+            --bg-sidebar: #1a1f1b; /* Novo fundo escuro do sidebar */
+            --bg-container: #FFFFFF; /* Branco suave */
+            --text-primary: #4a403a; /* Marrom escuro / Terra úmida */
+            --text-secondary: #6f665f; /* Marrom médio */
+            --accent-green-dark: #588157; /* Verde floresta */
+            --accent-green-light: #A3B18A; /* Verde Sálvia */
+            --accent-brown: #8A5A44; /* Marrom madeira */
+            --border-color: #e0dcd1; /* Linha sutil */
+            
+            /* Cores de Status Biofílicas */
+            --status-nao-iniciado-bg: #EAE8E1;
+            --status-nao-iniciado-text: #6f665f;
+            --status-em-andamento-bg: #D4E0C4;
+            --status-em-andamento-text: #4a6f49;
+            --status-finalizado-bg: #588157;
+            --status-finalizado-text: #ffffff;
+            --status-parado-bg: #F3D5A5;
+            --status-parado-text: #8A5A44;
+            --status-interrompido-bg: #E7BCA3;
+            --status-interrompido-text: #8A5A44;
+            --status-atrasado-bg: #C9ADA7;
+            --status-atrasado-text: #ffffff;
+        }
+
+        /* --- TIPOGRAFIA ORGÂNICA --- */
+        body { font-family: 'Lato', sans-serif; background-color: var(--bg-main); color: var(--text-primary); }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Lora', serif; color: var(--text-primary); }
+        
+        /* --- ESTILO BASE E ANIMAÇÕES --- */
+        .modal { transition: opacity 0.4s ease, visibility 0.4s ease; }
+        .modal-content { 
+            background-color: var(--bg-container); /* Garante fundo opaco para todos os modais */
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease; 
+        }
+        
+        /* Remove o anel de foco padrão e aplica um brilho suave */
+        *:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(138, 90, 68, 0.3);
+            border-radius: 8px;
+        }
+        *:focus:not(:focus-visible) {
+            box-shadow: none;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            background-color: var(--bg-sidebar);
+            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%233a322d' fill-opacity='0.1'%3E%3Cpath d='M18 8h4v24h-4z M8 18h24v4H8z'/%3E%3C/g%3E%3C/svg%3E");
+            border-right: 2px solid var(--accent-brown);
+        }
+        .sidebar h2 { color: #ffffff; text-shadow: 1px 1px 3px rgba(0,0,0,0.2); }
+        .sidebar .nav-link {
+            color: #e0dcd1;
+            border-radius: 12px 4px 12px 4px;
+            transition: all 0.3s ease;
+        }
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            transform: translateX(5px);
+        }
+        .nav-link-active {
+            background-color: var(--accent-brown) !important;
+            color: #ffffff !important;
+            font-weight: bold;
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* --- BOTÕES E INPUTS --- */
+        .btn-primary {
+            background-color: var(--accent-green-dark);
+            color: white;
+            border-radius: 20px 8px 20px 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn-primary:hover {
+            background-color: #4a6f49;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .btn-secondary {
+            background-color: var(--bg-container);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px 8px 20px 8px;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background-color: var(--bg-main);
+            border-color: var(--accent-brown);
+        }
+        
+        input[type="text"], input[type="number"], input[type="date"], select, textarea {
+            border: 1px solid var(--border-color);
+            border-radius: 12px 4px 12px 4px;
+            background-color: var(--bg-main);
+            padding: 10px;
+            transition: all 0.3s ease;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent-brown);
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(138, 90, 68, 0.3);
+        }
+
+        /* --- CONTAINERS E CARDS --- */
+        .content-card {
+            background-color: var(--bg-container);
+            border-radius: 24px 12px 24px 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .content-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        /* --- TABELAS --- */
+        table { border-collapse: separate; border-spacing: 0 8px; }
+        thead th {
+            font-family: 'Lora', serif;
+            color: var(--accent-green-dark);
+            border-bottom: 2px solid var(--accent-green-light);
+        }
+        tbody tr {
+            background-color: var(--bg-container);
+            border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+            transition: all 0.3s ease;
+        }
+        tbody tr:hover {
+            transform: scale(1.01);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.07);
+            z-index: 10;
+            position: relative;
+        }
+        tbody td { 
+            padding: 1rem 1.5rem;
+            vertical-align: middle; /* Alinhamento vertical */
+        }
+        tbody td:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+        tbody td:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+        .table-container { background-color: transparent; padding: 0; box-shadow: none; border: none; }
+        .table-container:hover { transform: none; box-shadow: none; }
+
+        /* --- ABAS (TABS) --- */
+        .tab-btn {
+            border-bottom: 2px solid transparent;
+            padding-bottom: 0.75rem;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+        .tab-btn:hover {
+            color: var(--accent-brown);
+        }
+        .tab-btn-active {
+            border-bottom-color: var(--accent-brown) !important;
+            color: var(--accent-brown) !important;
+            font-weight: 600;
+        }
+
+        /* --- CALENDÁRIO --- */
+        .calendar-task {
+            font-size: 0.75rem;
+            padding: 3px 6px;
+            margin-top: 4px;
+            border-radius: 8px 2px 8px 2px;
+            color: white;
+            font-weight: 600;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .calendar-task strong { font-weight: 700; }
+        .view-btn-active {
+            background-color: var(--accent-green-dark) !important;
+            color: white !important;
+            box-shadow: inset 1px 1px 3px rgba(0,0,0,0.2);
+        }
+        #dashboard-calendar-container .grid div {
+             transition: background-color 0.3s ease;
+        }
+        #dashboard-calendar-container .grid div:hover {
+            background-color: rgba(163, 177, 138, 0.2);
+        }
+
+        /* --- BARRA DE ROLAGEM --- */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: var(--border-color); }
+        ::-webkit-scrollbar-thumb { background: var(--accent-green-light); border-radius: 10px; border: 2px solid var(--border-color); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-green-dark); }
+        
+        /* --- ESTILOS ESPECÍFICOS --- */
+        #orcamento-info {
+            background-color: #f4f1e8;
+            border: 1px dashed var(--accent-brown);
+            border-radius: 12px;
+        }
+        #info-orcamento-barra {
+            transition: width 0.5s ease-in-out;
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 9999px; /* Pill shape */
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap; /* Garante que o texto não quebre */
+        }
+        
+        /* --- CHATBOT TENKY.AI --- */
+        #chatbot-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1000;
+        }
+        #chatbot-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--accent-brown);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #chatbot-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        #chatbot-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        #chatbot-window {
+            position: fixed;
+            bottom: 7rem;
+            right: 2rem;
+            width: 370px;
+            max-width: 90vw;
+            height: 500px;
+            max-height: 80vh;
+            background-color: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 24px 12px 24px 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            transform-origin: bottom right;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.95);
+        }
+        #chatbot-window.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
+        #chatbot-header {
+            background-color: var(--bg-sidebar);
+            color: white;
+            padding: 0.75rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Lora', serif;
+        }
+        #chatbot-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        #chatbot-messages {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .chat-message {
+            padding: 0.6rem 1rem;
+            border-radius: 18px;
+            max-width: 80%;
+            line-height: 1.4;
+        }
+        .chat-message.user {
+            background-color: var(--accent-green-dark);
+            color: white;
+            border-bottom-right-radius: 4px;
+            align-self: flex-end;
+        }
+        .chat-message.bot {
+            background-color: var(--bg-container);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+        }
+        .chat-message.loading {
+            align-self: flex-start;
+        }
+        .chat-message.loading span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--text-secondary);
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .chat-message.loading span:nth-child(1) { animation-delay: -0.32s; }
+        .chat-message.loading span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+        #chatbot-input-container {
+            padding: 1rem;
+            border-top: 1px solid var(--border-color);
+            background-color: var(--bg-container);
+        }
+        #chatbot-input-form {
+            display: flex;
+            gap: 0.5rem;
+        }
+        #chatbot-input {
+            flex-grow: 1;
+            border: 1px solid var(--border-color);
+            border-radius: 9999px;
+            padding: 0.5rem 1rem;
+            background-color: var(--bg-main);
+        }
+        #chatbot-input:focus {
+             border-color: var(--accent-brown);
+        }
+        #chatbot-send {
+            background-color: var(--accent-brown);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #chatbot-send:hover {
+            background-color: #6d4534;
+        }
+
+    </style>
+</head>
+<body class="bg-main">
+
+    <div id="app-container" class="flex h-screen">
+        <!-- Sidebar de Navegação -->
+        <aside class="w-64 sidebar text-white flex flex-col">
+            <div class="p-6 text-left">
+                <h2 class="text-2xl font-semibold uppercase">Controle de Obras</h2>
+            </div>
+            <nav class="flex-1 px-4 py-4 space-y-2">
+                <a href="#" id="nav-dashboard" class="flex items-center px-4 py-3 rounded-lg nav-link nav-link-active">
+                    <i class="fa-solid fa-leaf w-6 text-center"></i>
+                    <span class="ml-3">Visão Geral</span>
+                </a>
+                <a href="#" id="nav-compras" class="flex items-center px-4 py-3 rounded-lg nav-link">
+                    <i class="fa-solid fa-cart-shopping w-6 text-center"></i>
+                    <span class="ml-3">Compras</span>
+                </a>
+                <a href="#" id="nav-cadastros" class="flex items-center px-4 py-3 rounded-lg nav-link">
+                    <i class="fa-solid fa-address-book w-6 text-center"></i>
+                    <span class="ml-3">Cadastros</span>
+                </a>
+            </nav>
+            <div class="p-6 mt-auto text-center">
+                <img src="logo.png" alt="Logo" class="mx-auto" onerror="this.onerror=null;this.src='https://placehold.co/150x50/f9f8f4/4a403a?text=Logo+Indisponível';">
+            </div>
+        </aside>
+
+        <!-- Conteúdo Principal -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-8">
+                
+                <!-- VIEW: DASHBOARD (VISÃO GERAL) -->
+                <div id="view-dashboard">
+                    <header class="mb-8">
+                        <h1 class="text-4xl font-bold">Visão Geral</h1>
+                        <p class="text-secondary">Acompanhe a agenda geral da obra e o resumo dos clientes.</p>
+                    </header>
+
+                    <!-- Seção da Agenda Geral -->
+                    <div class="mb-8 content-card">
+                         <header class="mb-4 flex justify-between items-center">
+                             <div>
+                                 <h2 class="text-2xl font-semibold">Agenda Geral</h2>
+                                 <p class="text-sm text-secondary">Calendário de todas as atividades previstas.</p>
+                             </div>
+                             <div class="flex items-center space-x-2">
+                                 <button id="dashboard-cal-prev" class="p-2 rounded-full hover:bg-gray-200 transition-colors"><i class="fa-solid fa-chevron-left"></i></button>
+                                 <h3 id="dashboard-cal-month-year" class="text-lg font-semibold w-48 text-center"></h3>
+                                 <button id="dashboard-cal-next" class="p-2 rounded-full hover:bg-gray-200 transition-colors"><i class="fa-solid fa-chevron-right"></i></button>
+                                 <div class="ml-4">
+                                     <span class="isolate inline-flex rounded-md shadow-sm">
+                                         <button type="button" id="btn-view-semanal" class="relative inline-flex items-center rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10 view-btn-active">Semanal</button>
+                                         <button type="button" id="btn-view-mensal" class="relative -ml-px inline-flex items-center rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10">Mensal</button>
+                                     </span>
+                                 </div>
+                             </div>
+                         </header>
+                         <div id="dashboard-calendar-container" class="p-4 rounded-xl">
+                             <div id="dashboard-cal-semanal">
+                                 <div class="grid grid-cols-7 gap-2 text-center text-sm font-semibold text-secondary mb-2">
+                                     <div>Segunda</div>
+                                     <div>Terça</div>
+                                     <div>Quarta</div>
+                                     <div>Quinta</div>
+                                     <div>Sexta</div>
+                                     <div>Sábado</div>
+                                     <div>Domingo</div>
+                                 </div>
+                                 <div id="dashboard-cal-semanal-grid" class="grid grid-cols-7 gap-2"></div>
+                             </div>
+                             <div id="dashboard-cal-mensal" class="hidden">
+                                 <div class="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-secondary mb-2">
+                                     <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
+                                 </div>
+                                 <div id="dashboard-cal-mensal-grid" class="grid grid-cols-7 gap-1"></div>
+                             </div>
+                         </div>
+                    </div>
+
+                    <!-- Seção de Cards de Cliente -->
+                    <div>
+                        <h2 class="text-2xl font-semibold mb-4">Resumo dos Clientes</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 content-card">
+                            <input type="text" id="filtro-resumo-cliente" placeholder="Filtrar por cliente...">
+                            <select id="filtro-resumo-status">
+                                <option value="">Todos os Status</option>
+                                <option value="nao-iniciado">Não Iniciado</option>
+                                <option value="em-andamento">Em Andamento</option>
+                                <option value="concluido">Concluído</option>
+                            </select>
+                            <input type="text" id="filtro-resumo-condominio" placeholder="Filtrar por condomínio...">
+                            <input type="text" id="filtro-resumo-cidade" placeholder="Filtrar por cidade...">
+                        </div>
+                        <div id="lista-controle-clientes" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                            <!-- Cards de cliente inseridos via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW: COMPRAS -->
+                <div id="view-compras" class="hidden">
+                   <header class="mb-8 flex justify-between items-center">
+                        <div>
+                            <h1 class="text-4xl font-bold">Solicitação e Histórico</h1>
+                            <p class="text-secondary">Adicione e gerencie todas as compras e serviços.</p>
+                        </div>
+                       <button id="btn-abrir-modal-solicitacao" class="btn-primary inline-flex items-center px-4 py-2">
+                           <i class="fa-solid fa-plus mr-2"></i> Nova Solicitação
+                       </button>
+                    </header>
+                    
+                    <!-- Tabela de Compras -->
+                    <div class="table-container content-card">
+                        <h2 class="text-2xl font-semibold mb-4">Histórico de Itens</h2>
+                        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4">
+                            <input type="text" id="filtro-compras-geral" placeholder="Buscar em tudo..." class="col-span-2">
+                            <select id="filtro-compras-cliente"></select>
+                            <select id="filtro-compras-responsavel"></select>
+                            <select id="filtro-compras-status">
+                                <option value="">Todos Status</option>
+                                <option value="nao-iniciado">Não Iniciado</option>
+                                <option value="em-andamento">Em Andamento</option>
+                                <option value="parado">Parado</option>
+                                <option value="interrompido">Interrompido</option>
+                                <option value="atrasado">Atrasado</option>
+                                <option value="finalizado">Finalizado</option>
+                            </select>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="filtro-compras-ocultar-finalizados" class="h-4 w-4 rounded border-gray-300 text-accent-brown focus:ring-accent-brown">
+                                <label for="filtro-compras-ocultar-finalizados" class="ml-2 block text-sm">Ocultar Finalizados</label>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nº</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Cliente</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Serviço/Produto</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Ambiente</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Responsável</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Datas Previstas</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Duração</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-compras"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW: CADASTROS -->
+                <div id="view-cadastros" class="hidden">
+                    <header class="mb-8">
+                        <h1 class="text-4xl font-bold">Cadastros</h1>
+                        <p class="text-secondary">Gerencie seus clientes e fornecedores em um só lugar.</p>
+                    </header>
+
+                    <div class="border-b border-border-color">
+                        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                            <button id="tab-btn-clientes" type="button" class="tab-btn tab-btn-active">Clientes</button>
+                            <button id="tab-btn-fornecedores" type="button" class="tab-btn">Fornecedores</button>
+                        </nav>
+                    </div>
+
+                    <div class="mt-6">
+                        <!-- Clientes Content -->
+                        <div id="tab-content-clientes">
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-2xl font-semibold">Lista de Clientes</h2>
+                                <button id="btn-abrir-modal-cliente" class="btn-primary inline-flex items-center px-4 py-2">
+                                    <i class="fa-solid fa-user-plus mr-2"></i> Novo Cliente
+                                </button>
+                            </div>
+                            <div class="table-container content-card">
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                                    <input type="text" id="filtro-cliente-nome" placeholder="Filtrar por nome...">
+                                    <input type="text" id="filtro-cliente-cpf" placeholder="Filtrar por CPF/CNPJ...">
+                                    <input type="text" id="filtro-cliente-condominio" placeholder="Filtrar por Condomínio...">
+                                    <input type="text" id="filtro-cliente-cidade" placeholder="Filtrar por Cidade...">
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full">
+                                        <thead>
+                                            <tr>
+                                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">OS</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nome</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">CPF/CNPJ</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Endereço</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Orçamento</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Gasto Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tabela-clientes"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fornecedores Content -->
+                        <div id="tab-content-fornecedores" class="hidden">
+                             <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-2xl font-semibold">Lista de Fornecedores</h2>
+                                <button id="btn-abrir-modal-fornecedor" class="btn-primary inline-flex items-center px-4 py-2">
+                                    <i class="fa-solid fa-plus mr-2"></i> Novo Fornecedor
+                                </button>
+                            </div>
+                            <div class="table-container content-card">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                    <input type="text" id="filtro-fornecedor-nome" placeholder="Filtrar por nome...">
+                                    <select id="filtro-fornecedor-categoria"></select>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full">
+                                        <thead>
+                                            <tr>
+                                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nome</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Categoria</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Gasto Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tabela-fornecedores"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- TELA RESTRITA POR RESPONSÁVEL -->
+    <div id="view-responsavel" class="hidden">
+        <div class="min-h-screen" style="background-color: var(--bg-main); background-image: url('data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23e0dcd1\' fill-opacity=\'0.4\'%3E%3Cpath d=\'M18 8h4v24h-4z M8 18h24v4H8z\'/%3E%3C/g%3E%3C/svg%3E');">
+            <div class="p-8 rounded-b-2xl mb-8" style="background-color: #1a1f1b;">
+                <div class="max-w-screen-lg mx-auto">
+                    <header class="flex items-center space-x-4">
+                        <img src="logo.png" alt="Logo" class="h-12" onerror="this.onerror=null;this.src='https://placehold.co/150x50/1a1f1b/FFFFFF?text=Logo';">
+                        <div>
+                            <h1 class="text-3xl font-bold text-white">Tarefas de: <span id="responsavel-nome-titulo"></span></h1>
+                            <p class="text-gray-300">Acesso restrito às suas tarefas pendentes.</p>
+                        </div>
+                    </header>
+                </div>
+            </div>
+
+            <div class="max-w-screen-lg mx-auto px-4 md:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="content-card text-center">
+                        <p class="text-sm text-secondary">Tarefas Pendentes</p>
+                        <p class="text-4xl font-bold" id="responsavel-total-tarefas">0</p>
+                    </div>
+                    <div class="content-card text-center">
+                        <p class="text-sm text-secondary">Próxima Tarefa a Vencer</p>
+                        <p class="text-xl font-bold truncate" id="responsavel-proxima-tarefa">N/A</p>
+                    </div>
+                    <div class="content-card text-center">
+                        <p class="text-sm text-secondary">Clientes Ativos</p>
+                        <p class="text-4xl font-bold" id="responsavel-clientes-ativos">0</p>
+                    </div>
+                </div>
+
+                <div id="tabela-responsavel" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Cards de tarefas inseridos via JS -->
+                </div>
+
+                <div class="mt-8 text-center text-sm text-gray-400 pb-8">
+                    <p>Sistema de Controle de Obras - Acesso Restrito</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODAIS -->
+    <!-- Modal Cliente -->
+    <div id="modal-cliente" class="modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 invisible opacity-0 z-50">
+        <div class="modal-content rounded-lg shadow-xl w-full max-w-md p-6 transform scale-95 content-card">
+            <h3 class="text-2xl font-medium mb-4">Cadastrar Novo Cliente</h3>
+            <form id="form-cliente">
+                <div class="grid grid-cols-1 gap-4">
+                    <input type="text" id="cliente-nome" placeholder="Nome Completo" required>
+                    <input type="text" id="cliente-cpf" placeholder="CPF/CNPJ (opcional)">
+                    <input type="text" id="cliente-condominio" placeholder="Bairro ou Condomínio">
+                    <input type="text" id="cliente-endereco" placeholder="Endereço Completo" required>
+                    <input type="text" id="cliente-cidade" placeholder="Cidade" required>
+                    <input type="number" step="0.01" id="cliente-orcamento" placeholder="Orçamento (R$)" required>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" id="btn-fechar-modal-cliente" class="btn-secondary py-2 px-4">Cancelar</button>
+                    <button type="submit" class="btn-primary py-2 px-4">Salvar Cliente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Fornecedor -->
+    <div id="modal-fornecedor" class="modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 invisible opacity-0 z-50">
+        <div class="modal-content rounded-lg shadow-xl w-full max-w-md p-6 transform scale-95 content-card">
+            <h3 class="text-2xl font-medium mb-4">Cadastrar Novo Fornecedor</h3>
+            <form id="form-fornecedor">
+                <div class="grid grid-cols-1 gap-4">
+                    <input type="text" id="fornecedor-nome" placeholder="Nome do Fornecedor" required>
+                    <div class="flex items-center space-x-2">
+                        <select id="fornecedor-categoria" required class="w-full">
+                            <option value="">Selecione a categoria</option>
+                        </select>
+                        <button type="button" id="btn-abrir-modal-categoria" class="flex-shrink-0 bg-accent-brown hover:bg-opacity-80 text-white font-bold py-2 px-3 rounded-full text-sm">+</button>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" id="btn-fechar-modal-fornecedor" class="btn-secondary py-2 px-4">Cancelar</button>
+                    <button type="submit" class="btn-primary py-2 px-4">Salvar Fornecedor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Categoria -->
+    <div id="modal-categoria" class="modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 invisible opacity-0 z-50">
+        <div class="modal-content rounded-lg shadow-xl w-full max-w-sm p-6 transform scale-95 content-card">
+            <h3 class="text-2xl font-medium mb-4">Nova Categoria</h3>
+            <form id="form-categoria">
+                <input type="text" id="categoria-nome" placeholder="Nome da Categoria" required>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" id="btn-fechar-modal-categoria" class="btn-secondary py-2 px-4">Cancelar</button>
+                    <button type="submit" class="btn-primary py-2 px-4">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal Solicitacao -->
+    <div id="modal-solicitacao" class="modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 invisible opacity-0 z-50">
+        <div class="modal-content rounded-lg shadow-xl w-full max-w-5xl p-6 transform scale-95 content-card">
+             <div class="flex justify-between items-center mb-4">
+                 <h3 class="text-2xl font-medium">Nova Solicitação de Compra</h3>
+                 <button type="button" id="btn-fechar-modal-solicitacao" class="text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+             </div>
+             <form id="form-solicitacao">
+                 <div class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 mb-4">
+                     <div><label for="sol-cliente" class="block text-sm font-medium">Cliente*</label><select id="sol-cliente" required class="mt-1 block w-full"></select></div>
+                     <div><label for="sol-fornecedor" class="block text-sm font-medium">Fornecedor*</label><select id="sol-fornecedor" required class="mt-1 block w-full"></select></div>
+                     <div><label for="sol-servico" class="block text-sm font-medium">Serviço/Produto*</label><input type="text" id="sol-servico" required class="mt-1 block w-full"></div>
+                     <div><label for="sol-valor" class="block text-sm font-medium">Valor (R$)*</label><input type="number" step="0.01" id="sol-valor" required class="mt-1 block w-full"></div>
+                     <div><label for="sol-ambiente" class="block text-sm font-medium">Ambiente</label><input type="text" id="sol-ambiente" class="mt-1 block w-full"></div>
+                     <div><label for="sol-responsavel" class="block text-sm font-medium">Responsável</label><input type="text" id="sol-responsavel" class="mt-1 block w-full"></div>
+                     <div><label for="sol-data-compra" class="block text-sm font-medium">Data da Compra*</label><input type="date" id="sol-data-compra" required class="mt-1 block w-full"></div>
+                     <div><label for="sol-prazo-entrega" class="block text-sm font-medium">Prazo de Entrega</label><input type="date" id="sol-prazo-entrega" class="mt-1 block w-full"></div>
+                     <div><label for="sol-inicio-previsto" class="block text-sm font-medium">Início Previsto</label><input type="date" id="sol-inicio-previsto" class="mt-1 block w-full"></div>
+                     <div><label for="sol-termino-previsto" class="block text-sm font-medium">Término Previsto</label><input type="date" id="sol-termino-previsto" class="mt-1 block w-full"></div>
+                 </div>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-4">
+                      <div><label for="sol-descricao" class="block text-sm font-medium">Descrição</label><textarea id="sol-descricao" rows="3" class="mt-1 block w-full"></textarea></div>
+                      <div><label for="sol-observacoes" class="block text-sm font-medium">Observações</label><textarea id="sol-observacoes" rows="3" class="mt-1 block w-full"></textarea></div>
+                 </div>
+                  <div id="orcamento-info" class="text-sm p-3 rounded-md hidden mb-4">
+                      <div class="flex justify-between items-center">
+                          <div>
+                              <p>Orçamento Cliente: <strong id="info-orcamento-total"></strong></p>
+                              <p>Valor Gasto (com este item): <strong id="info-orcamento-gasto"></strong></p>
+                          </div>
+                          <p class="text-lg font-bold">Uso: <strong id="info-orcamento-percentual">0%</strong></p>
+                      </div>
+                      <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                          <div id="info-orcamento-barra" class="bg-green-600 h-2.5 rounded-full" style="width: 0%"></div>
+                      </div>
+                  </div>
+                  <div class="flex justify-end items-center pt-4 border-t border-border-color space-x-3">
+                      <button type="button" id="btn-fechar-modal-solicitacao-2" class="btn-secondary py-2 px-4">Cancelar</button>
+                      <button type="submit" class="btn-primary inline-flex justify-center py-2 px-6">
+                          <i class="fa-solid fa-check mr-2"></i>Confirmar
+                      </button>
+                  </div>
+             </form>
+        </div>
+    </div>
+
+    <!-- Modal Detalhes Cliente -->
+    <div id="modal-detalhes-cliente" class="modal fixed inset-0 bg-black bg-opacity-75 p-4 invisible opacity-0 z-40 overflow-y-auto">
+        <div class="modal-content rounded-lg shadow-xl w-full max-w-7xl p-6 transform scale-95 mx-auto my-8">
+            <div>
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="text-3xl font-bold" id="detalhes-cliente-nome"></h3>
+                        <p class="text-sm text-secondary" id="detalhes-cliente-os"></p>
+                    </div>
+                    <button type="button" id="btn-fechar-modal-detalhes-cliente" class="text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="content-card"><p class="text-sm text-secondary">Orçamento Previsto</p><p class="text-xl font-semibold" id="detalhes-cliente-orcamento"></p></div>
+                    <div class="content-card"><p class="text-sm text-secondary">Valor Gasto</p><p class="text-xl font-semibold" id="detalhes-cliente-gasto"></p></div>
+                    <div class="content-card" style="background-color: var(--accent-brown); color: white;"><p class="text-sm text-gray-200">Saldo</p><p class="text-xl font-semibold" id="detalhes-cliente-saldo"></p></div>
+                </div>
+                
+                <div class="mb-4">
+                    <h4 class="text-lg font-semibold mb-2">Acesso Rápido por Responsável:</h4>
+                    <div id="detalhes-cliente-links-responsaveis" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <div class="mt-4 mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-lg font-semibold">Agenda da Semana</h4>
+                        <button id="btn-abrir-calendario-mensal" class="text-sm text-accent-brown hover:underline font-medium">
+                            Ver calendário completo <i class="fa-solid fa-calendar-days ml-1"></i>
+                        </button>
+                    </div>
+                    <div id="calendario-semanal" class="grid grid-cols-1 md:grid-cols-7 gap-2"></div>
+                </div>
+            </div>
+            
+            <div class="content-card mt-4">
+                <h4 class="text-lg font-semibold mb-2">Itens da Obra</h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium uppercase w-2/5">Item</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium uppercase w-2/5">Datas</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium uppercase">Valor</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium uppercase">% Orçam.</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium uppercase">Status</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium uppercase">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-detalhes-cliente"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Calendário Mensal -->
+    <div id="modal-calendario-mensal" class="modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 invisible opacity-0 z-50">
+        <div class="modal-content rounded-lg shadow-xl w-full max-w-4xl p-6 transform scale-95 flex flex-col h-[90vh] content-card">
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center space-x-4">
+                    <button id="cal-prev-month" class="p-2 rounded-full hover:bg-gray-100"><i class="fa-solid fa-chevron-left"></i></button>
+                    <h3 id="cal-month-year" class="text-xl font-medium w-40 text-center"></h3>
+                    <button id="cal-next-month" class="p-2 rounded-full hover:bg-gray-100"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                <button type="button" id="btn-fechar-modal-calendario-mensal" class="text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+            </div>
+            <div class="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-secondary mb-2">
+                <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
+            </div>
+            <div id="cal-body" class="grid grid-cols-7 gap-1 flex-grow overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <!-- Chatbot Tenky.AI -->
+    <div id="chatbot-container">
+        <div id="chatbot-window">
+            <div id="chatbot-header">
+                <h3 class="text-lg font-semibold">Tenky.Ai</h3>
+                <button id="chatbot-close">&times;</button>
+            </div>
+            <div id="chatbot-messages">
+                 <div class="chat-message bot">Olá! Sou seu assessor virtual. Como posso ajudar hoje com suas obras?</div>
+            </div>
+            <div id="chatbot-input-container">
+                <form id="chatbot-input-form">
+                    <input type="text" id="chatbot-input" placeholder="Pergunte algo..." autocomplete="off">
+                    <button type="submit" id="chatbot-send">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+        <div id="chatbot-icon">
+             <img id="chatbot-icon-img" src="tenkyai.png" alt="Chatbot Icon" onerror="this.onerror=null;this.src='https://placehold.co/60x60/8A5A44/FFFFFF?text=AI';">
+        </div>
+    </div>
+
+
+    <!-- Firebase -->
+    <script type="module">
+        // Importações do Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, onSnapshot, doc, setDoc, deleteDoc, query, where, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCKIv4tWl1gxSgzgfhSpraqMgyfyiLxab4",
+            authDomain: "gabrielatenka.firebaseapp.com",
+            projectId: "gabrielatenka",
+            storageBucket: "gabrielatenka.appspot.com",
+            messagingSenderId: "167010039937",
+            appId: "1:167010039937:web:3b2f5eabdbbc1cf81bb580",
+            measurementId: "G-WE9KC4Y064"
+        };
+
+        // Inicialização do Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Coleções
+        const clientesCol = collection(db, 'clientes');
+        const fornecedoresCol = collection(db, 'fornecedores');
+        const categoriasCol = collection(db, 'categorias');
+        const comprasCol = collection(db, 'compras');
+
+        // Estado da Aplicação
+        let allClientes = [];
+        let allFornecedores = [];
+        let allCategorias = [];
+        let allCompras = [];
+        let clientModalCalendarState = { month: new Date().getMonth(), year: new Date().getFullYear(), clienteId: null };
+        let dashboardCalendarState = { date: new Date(), view: 'weekly' };
+
+
+        // --- UTILS ---
+        const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
+        const formatDate = (dateString) => {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString + 'T00:00:00'); // Ajuste de fuso
+            return date.toLocaleDateString('pt-BR');
+        };
+        const calculateDays = (start, end) => {
+            if (!start || !end) return 'N/A';
+            const startDate = new Date(start);
+            const endDate = new Date(end);
+            const diffTime = Math.abs(endDate - startDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return `${diffDays} dia(s)`;
+        };
+        const getPercentualColor = (percentual) => {
+            if (percentual > 100) {
+                return 'text-red-700 font-bold';
+            } else if (percentual >= 90) {
+                return 'text-red-600 font-semibold';
+            } else if (percentual >= 70) {
+                return 'text-amber-600 font-semibold';
+            }
+            return 'text-secondary'; // Default color
+        };
+
+        const generateColorFromString = (str) => {
+            let hash = 0;
+            if (!str) str = 'default';
+            for (let i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            let color = '#';
+            for (let i = 0; i < 3; i++) {
+                let value = (hash >> (i * 8)) & 0xFF;
+                // Adjust to get softer, more natural colors
+                value = Math.floor((value + 200) / 2); // Shift towards lighter tones
+                color += ('00' + value.toString(16)).substr(-2);
+            }
+            return color;
+        };
+
+        const getTextColorForBg = (bgColor) => {
+            const color = (bgColor.charAt(0) === '#') ? bgColor.substring(1, 7) : bgColor;
+            const r = parseInt(color.substring(0, 2), 16); // Red
+            const g = parseInt(color.substring(2, 4), 16); // Green
+            const b = parseInt(color.substring(4, 6), 16); // Blue
+            return (r * 0.299 + g * 0.587 + b * 0.114) > 186 ? '#4a403a' : '#ffffff';
+        };
+
+
+        // --- MODAL CONTROLLERS ---
+        const modals = ['modal-cliente', 'modal-fornecedor', 'modal-categoria', 'modal-detalhes-cliente', 'modal-calendario-mensal', 'modal-solicitacao'];
+        const openModal = (id) => {
+            const modal = document.getElementById(id);
+            modal.classList.remove('invisible', 'opacity-0');
+            modal.querySelector('.modal-content').classList.remove('scale-95');
+        };
+        const closeModal = (id) => {
+            const modal = document.getElementById(id);
+            modal.classList.add('opacity-0');
+            modal.querySelector('.modal-content').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('invisible'), 300);
+        };
+
+        // --- RENDER FUNCTIONS ---
+
+        const populateSelect = (selectId, data, valueField, textField, placeholder) => {
+            const select = document.getElementById(selectId);
+            select.innerHTML = `<option value="">${placeholder}</option>`;
+            const sortedData = [...data].sort((a, b) => a[textField].localeCompare(b[textField]));
+            sortedData.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item[valueField];
+                option.textContent = item[textField];
+                select.appendChild(option);
+            });
+        };
+
+        const renderTabelaCompras = () => {
+            const tbody = document.getElementById('tabela-compras');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            
+            const filtroGeral = document.getElementById('filtro-compras-geral').value.toLowerCase();
+            const filtroCliente = document.getElementById('filtro-compras-cliente').value;
+            const filtroResponsavel = document.getElementById('filtro-compras-responsavel').value;
+            const filtroStatus = document.getElementById('filtro-compras-status').value;
+            const ocultarFinalizados = document.getElementById('filtro-compras-ocultar-finalizados').checked;
+
+            const filteredCompras = allCompras
+                .filter(c => !ocultarFinalizados || c.status !== 'finalizado')
+                .filter(c => !filtroCliente || c.clienteId === filtroCliente)
+                .filter(c => !filtroResponsavel || c.responsavel === filtroResponsavel)
+                .filter(c => !filtroStatus || c.status === filtroStatus)
+                .filter(c => {
+                    if (!filtroGeral) return true;
+                    const cliente = allClientes.find(cli => cli.id === c.clienteId);
+                    const searchString = `${c.servico} ${c.ambiente} ${c.responsavel} ${cliente?.nome || ''}`.toLowerCase();
+                    return searchString.includes(filtroGeral);
+                });
+
+            if (filteredCompras.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-secondary">Nenhuma solicitação encontrada.</td></tr>`;
+                return;
+            }
+
+            filteredCompras.forEach((compra, index) => {
+                const cliente = allClientes.find(c => c.id === compra.clienteId);
+                const statusMap = {
+                    'nao-iniciado': { text: 'Não Iniciado', color: 'bg-[var(--status-nao-iniciado-bg)] text-[var(--status-nao-iniciado-text)]' },
+                    'em-andamento': { text: 'Em Andamento', color: 'bg-[var(--status-em-andamento-bg)] text-[var(--status-em-andamento-text)]' },
+                    'parado': { text: 'Parado', color: 'bg-[var(--status-parado-bg)] text-[var(--status-parado-text)]' },
+                    'interrompido': { text: 'Interrompido', color: 'bg-[var(--status-interrompido-bg)] text-[var(--status-interrompido-text)]' },
+                    'atrasado': { text: 'Atrasado', color: 'bg-[var(--status-atrasado-bg)] text-[var(--status-atrasado-text)]' },
+                    'finalizado': { text: 'Finalizado', color: 'bg-[var(--status-finalizado-bg)] text-[var(--status-finalizado-text)]' },
+                };
+                const statusInfo = statusMap[compra.status] || statusMap['nao-iniciado'];
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="whitespace-nowrap text-sm font-medium text-primary">${index + 1}</td>
+                    <td class="whitespace-nowrap text-sm text-secondary">${cliente?.nome || 'N/A'}</td>
+                    <td class="whitespace-nowrap text-sm font-medium text-primary">${compra.servico}</td>
+                    <td class="whitespace-nowrap text-sm text-secondary">${compra.ambiente || 'N/A'}</td>
+                    <td class="whitespace-nowrap text-sm text-secondary">${compra.responsavel || 'N/A'}</td>
+                    <td class="whitespace-nowrap text-sm text-secondary">${formatDate(compra.inicioPrevisto)} - ${formatDate(compra.terminoPrevisto)}</td>
+                    <td class="whitespace-nowrap text-sm text-secondary">${calculateDays(compra.inicioPrevisto, compra.terminoPrevisto)}</td>
+                    <td class="whitespace-nowrap text-sm">
+                        <span class="status-badge ${statusInfo.color}">${statusInfo.text}</span>
+                    </td>
+                    <td class="whitespace-nowrap text-right text-sm font-medium">
+                        <div class="flex items-center space-x-3 text-lg">
+                            ${compra.status !== 'em-andamento' ? `<button title="Em Andamento" data-id="${compra.id}" data-status="em-andamento" class="btn-status-change text-blue-600 hover:text-blue-800"><i class="fa-solid fa-play"></i></button>` : ''}
+                            ${compra.status !== 'parado' ? `<button title="Parado" data-id="${compra.id}" data-status="parado" class="btn-status-change text-yellow-500 hover:text-yellow-700"><i class="fa-solid fa-pause"></i></button>` : ''}
+                            ${compra.status !== 'interrompido' ? `<button title="Interrompido" data-id="${compra.id}" data-status="interrompido" class="btn-status-change text-orange-500 hover:text-orange-700"><i class="fa-solid fa-triangle-exclamation"></i></button>` : ''}
+                            ${compra.status !== 'atrasado' ? `<button title="Atrasado" data-id="${compra.id}" data-status="atrasado" class="btn-status-change text-red-500 hover:text-red-700"><i class="fa-solid fa-clock"></i></button>` : ''}
+                            ${compra.status !== 'finalizado' ? `<button title="Finalizado" data-id="${compra.id}" data-status="finalizado" class="btn-status-change text-green-600 hover:text-green-800"><i class="fa-solid fa-check-double"></i></button>` : ''}
+                            <button title="Excluir" data-id="${compra.id}" class="btn-delete-compra text-gray-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        };
+
+        const renderTabelaClientes = () => {
+            const tbody = document.getElementById('tabela-clientes');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            const filtroNome = document.getElementById('filtro-cliente-nome').value.toLowerCase();
+            const filtroCpf = document.getElementById('filtro-cliente-cpf').value.toLowerCase();
+            const filtroCondominio = document.getElementById('filtro-cliente-condominio').value.toLowerCase();
+            const filtroCidade = document.getElementById('filtro-cliente-cidade').value.toLowerCase();
+
+            const filteredClientes = allClientes.filter(c => {
+                const gastoTotal = allCompras.filter(compra => compra.clienteId === c.id).reduce((acc, item) => acc + item.valor, 0);
+                c.gastoTotal = gastoTotal;
+                return (!filtroNome || c.nome.toLowerCase().includes(filtroNome)) &&
+                                (!filtroCpf || (c.cpf && c.cpf.toLowerCase().includes(filtroCpf))) &&
+                                (!filtroCondominio || (c.condominio && c.condominio.toLowerCase().includes(filtroCondominio))) &&
+                                (!filtroCidade || (c.cidade && c.cidade.toLowerCase().includes(filtroCidade)));
+            });
+
+            if (filteredClientes.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-secondary">Nenhum cliente encontrado.</td></tr>`;
+                return;
+            }
+
+            filteredClientes.forEach(cliente => {
+                const row = document.createElement('tr');
+                const gastoTotal = allCompras.filter(compra => compra.clienteId === cliente.id).reduce((acc, item) => acc + item.valor, 0);
+                const percentualGasto = cliente.orcamento > 0 ? (gastoTotal / cliente.orcamento) * 100 : 0;
+                const gastoColorClass = getPercentualColor(percentualGasto);
+
+                row.innerHTML = `
+                    <td class="whitespace-nowrap text-sm font-medium text-primary">${cliente.os}</td>
+                    <td class="whitespace-nowrap text-sm font-medium text-primary">${cliente.nome}</td>
+                    <td class="whitespace-nowrap text-sm text-secondary">${cliente.cpf || 'N/A'}</td>
+                    <td class="whitespace-nowrap text-sm text-secondary">${cliente.endereco}, ${cliente.cidade}</td>
+                    <td class="whitespace-nowrap text-sm text-secondary">${formatCurrency(cliente.orcamento)}</td>
+                    <td class="whitespace-nowrap text-sm ${gastoColorClass}">${formatCurrency(gastoTotal)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        };
+
+        const renderTabelaFornecedores = () => {
+            const tbody = document.getElementById('tabela-fornecedores');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            const filtroNome = document.getElementById('filtro-fornecedor-nome').value.toLowerCase();
+            const filtroCategoria = document.getElementById('filtro-fornecedor-categoria').value;
+            
+            const filteredFornecedores = allFornecedores.filter(f => {
+                const gastoTotal = allCompras.filter(c => c.fornecedorId === f.id).reduce((acc, item) => acc + item.valor, 0);
+                f.gastoTotal = gastoTotal;
+                const categoria = allCategorias.find(cat => cat.id === f.categoriaId);
+                f.categoriaNome = categoria?.nome || 'N/A';
+
+                return (!filtroNome || f.nome.toLowerCase().includes(filtroNome)) &&
+                                (!filtroCategoria || f.categoriaId === filtroCategoria);
+            });
+
+            if (filteredFornecedores.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center py-8 text-secondary">Nenhum fornecedor encontrado.</td></tr>`;
+                return;
+            }
+
+            filteredFornecedores.forEach(fornecedor => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="whitespace-nowrap text-sm font-medium text-primary">${fornecedor.nome}</td>
+                    <td class="whitespace-nowrap text-sm text-secondary">${fornecedor.categoriaNome}</td>
+                    <td class="whitespace-nowrap text-sm font-semibold text-primary">${formatCurrency(fornecedor.gastoTotal)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        };
+
+        const renderControleClientes = () => {
+            const container = document.getElementById('lista-controle-clientes');
+            if(!container) return;
+            container.innerHTML = '';
+
+            const filtroNome = document.getElementById('filtro-resumo-cliente').value.toLowerCase();
+            const filtroStatus = document.getElementById('filtro-resumo-status').value;
+            const filtroCondominio = document.getElementById('filtro-resumo-condominio').value.toLowerCase();
+            const filtroCidade = document.getElementById('filtro-resumo-cidade').value.toLowerCase();
+
+            const filteredClientes = allClientes.filter(cliente => {
+                // Calculate status for filtering
+                const comprasCliente = allCompras.filter(c => c.clienteId === cliente.id);
+                let andamento = 'nao-iniciado';
+                const totalItens = comprasCliente.length;
+                if (totalItens > 0) {
+                    const finalizados = comprasCliente.filter(c => c.status === 'finalizado').length;
+                    if (finalizados === totalItens) {
+                        andamento = 'concluido';
+                    } else if (comprasCliente.some(c => c.status !== 'nao-iniciado')) {
+                        andamento = 'em-andamento';
+                    }
+                }
+
+                // Apply filters
+                const matchNome = !filtroNome || cliente.nome.toLowerCase().includes(filtroNome);
+                const matchStatus = !filtroStatus || andamento === filtroStatus;
+                const matchCondominio = !filtroCondominio || (cliente.condominio && cliente.condominio.toLowerCase().includes(filtroCondominio));
+                const matchCidade = !filtroCidade || (cliente.cidade && cliente.cidade.toLowerCase().includes(filtroCidade));
+
+                return matchNome && matchStatus && matchCondominio && matchCidade;
+            });
+
+
+            if (filteredClientes.length === 0) {
+                container.innerHTML = `<p class="col-span-full text-center py-8 text-secondary">Nenhum cliente encontrado com os filtros aplicados.</p>`;
+                return;
+            }
+
+            filteredClientes.forEach(cliente => {
+                const comprasCliente = allCompras.filter(c => c.clienteId === cliente.id);
+                const gastoTotal = comprasCliente.reduce((acc, item) => acc + item.valor, 0);
+                
+                let andamento = 'Não Iniciado';
+                let andamentoColor = 'bg-[var(--status-nao-iniciado-bg)] text-[var(--status-nao-iniciado-text)]';
+                const totalItens = comprasCliente.length;
+                if (totalItens > 0) {
+                    const finalizados = comprasCliente.filter(c => c.status === 'finalizado').length;
+                    if (finalizados === totalItens) {
+                        andamento = 'Concluído';
+                        andamentoColor = 'bg-[var(--status-finalizado-bg)] text-[var(--status-finalizado-text)]';
+                    } else if (comprasCliente.some(c => c.status !== 'nao-iniciado')) {
+                        andamento = 'Em Andamento';
+                        andamentoColor = 'bg-[var(--status-em-andamento-bg)] text-[var(--status-em-andamento-text)]';
+                    }
+                }
+
+                const card = document.createElement('div');
+                card.className = 'content-card flex flex-col';
+                card.innerHTML = `
+                    <div class="flex-grow">
+                        <div class="flex justify-between items-start">
+                            <h3 class="font-bold text-xl">${cliente.nome}</h3>
+                            <span class="status-badge ${andamentoColor}">${andamento}</span>
+                        </div>
+                        <p class="text-sm text-secondary">${cliente.condominio ? cliente.condominio + ', ' : ''}${cliente.cidade}</p>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-border-color">
+                        <div class="flex justify-between items-center mb-2">
+                            <p class="text-xs text-secondary">Gasto: ${formatCurrency(gastoTotal)}</p>
+                            <p class="text-xs text-secondary">Orçam.: ${formatCurrency(cliente.orcamento)}</p>
+                        </div>
+                        <button data-id="${cliente.id}" class="btn-ver-mais w-full bg-accent-green-light text-accent-green-dark hover:bg-opacity-80 text-sm font-semibold py-2 px-4 rounded-md transition-colors" style="border-radius: 12px 4px 12px 4px;">
+                            Ver Detalhes <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        };
+        
+        const openDetalhesClienteModal = (clienteId) => {
+            const cliente = allClientes.find(c => c.id === clienteId);
+            if (!cliente) return;
+
+            clientModalCalendarState.clienteId = clienteId;
+
+            const comprasCliente = allCompras.filter(c => c.clienteId === clienteId);
+            const gastoTotal = comprasCliente.reduce((acc, item) => acc + item.valor, 0);
+            const saldo = cliente.orcamento - gastoTotal;
+
+            document.getElementById('detalhes-cliente-nome').textContent = cliente.nome;
+            document.getElementById('detalhes-cliente-os').textContent = `OS: ${cliente.os}`;
+            document.getElementById('detalhes-cliente-orcamento').textContent = formatCurrency(cliente.orcamento);
+            document.getElementById('detalhes-cliente-gasto').textContent = formatCurrency(gastoTotal);
+            document.getElementById('detalhes-cliente-saldo').textContent = formatCurrency(saldo);
+            
+            const tbody = document.getElementById('tabela-detalhes-cliente');
+            tbody.innerHTML = '';
+
+            if (comprasCliente.length === 0) {
+                 tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-secondary">Nenhum item para este cliente.</td></tr>`;
+            } else {
+                comprasCliente.forEach(item => {
+                    const percentual = cliente.orcamento > 0 ? (item.valor / cliente.orcamento) * 100 : 0;
+                    const percentualColorClass = getPercentualColor(percentual);
+                    const statusMap = {
+                        'nao-iniciado': { text: 'Não Iniciado', color: 'bg-[var(--status-nao-iniciado-bg)] text-[var(--status-nao-iniciado-text)]' },
+                        'em-andamento': { text: 'Em Andamento', color: 'bg-[var(--status-em-andamento-bg)] text-[var(--status-em-andamento-text)]' },
+                        'parado': { text: 'Parado', color: 'bg-[var(--status-parado-bg)] text-[var(--status-parado-text)]' },
+                        'interrompido': { text: 'Interrompido', color: 'bg-[var(--status-interrompido-bg)] text-[var(--status-interrompido-text)]' },
+                        'atrasado': { text: 'Atrasado', color: 'bg-[var(--status-atrasado-bg)] text-[var(--status-atrasado-text)]' },
+                        'finalizado': { text: 'Finalizado', color: 'bg-[var(--status-finalizado-bg)] text-[var(--status-finalizado-text)]' },
+                    };
+                    const statusInfo = statusMap[item.status] || statusMap['nao-iniciado'];
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="align-middle break-words">
+                            <p class="text-sm font-semibold text-primary">${item.servico}</p>
+                            <p class="text-xs text-secondary">${item.descricao || 'Sem descrição'}</p>
+                            <p class="text-xs text-secondary mt-1"><strong>Ambiente:</strong> ${item.ambiente || 'N/A'} | <strong>Resp:</strong> ${item.responsavel || 'N/A'}</p>
+                        </td>
+                         <td class="align-middle break-words text-sm text-secondary">
+                            <p><strong>Compra:</strong> ${formatDate(item.dataCompra)}</p>
+                            <p><strong>Entrega:</strong> ${formatDate(item.prazoEntrega)}</p>
+                            <p><strong>Previsto:</strong> ${formatDate(item.inicioPrevisto)} a ${formatDate(item.terminoPrevisto)} (${calculateDays(item.inicioPrevisto, item.terminoPrevisto)})</p>
+                        </td>
+                        <td class="align-middle break-words text-sm font-semibold text-primary">${formatCurrency(item.valor)}</td>
+                        <td class="align-middle break-words text-sm ${percentualColorClass}">${percentual.toFixed(1)}%</td>
+                        <td class="align-middle">
+                            <span class="status-badge ${statusInfo.color}">${statusInfo.text}</span>
+                        </td>
+                        <td class="align-middle">
+                            <div class="flex items-center space-x-2 text-lg">
+                                ${item.status !== 'em-andamento' ? `<button title="Em Andamento" data-id="${item.id}" data-status="em-andamento" class="btn-status-change text-blue-600 hover:text-blue-800"><i class="fa-solid fa-play"></i></button>` : ''}
+                                ${item.status !== 'parado' ? `<button title="Parado" data-id="${item.id}" data-status="parado" class="btn-status-change text-yellow-500 hover:text-yellow-700"><i class="fa-solid fa-pause"></i></button>` : ''}
+                                ${item.status !== 'interrompido' ? `<button title="Interrompido" data-id="${item.id}" data-status="interrompido" class="btn-status-change text-orange-500 hover:text-orange-700"><i class="fa-solid fa-triangle-exclamation"></i></button>` : ''}
+                                ${item.status !== 'atrasado' ? `<button title="Atrasado" data-id="${item.id}" data-status="atrasado" class="btn-status-change text-red-500 hover:text-red-700"><i class="fa-solid fa-clock"></i></button>` : ''}
+                                ${item.status !== 'finalizado' ? `<button title="Finalizado" data-id="${item.id}" data-status="finalizado" class="btn-status-change text-green-600 hover:text-green-800"><i class="fa-solid fa-check-double"></i></button>` : ''}
+                                <button title="Excluir" data-id="${item.id}" class="btn-delete-compra text-gray-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            const linksContainer = document.getElementById('detalhes-cliente-links-responsaveis');
+            linksContainer.innerHTML = '';
+            const responsaveis = [...new Set(comprasCliente.map(c => c.responsavel).filter(Boolean))];
+            if (responsaveis.length > 0) {
+                responsaveis.forEach(r => {
+                    const link = document.createElement('a');
+                    link.href = `?responsavel=${encodeURIComponent(r)}#responsavel-view`;
+                    link.target = '_blank';
+                    link.className = 'bg-gray-200 text-gray-700 hover:bg-gray-300 text-xs font-semibold py-1 px-3 rounded-full';
+                    link.innerHTML = `<i class="fa-solid fa-link mr-1"></i> ${r}`;
+                    linksContainer.appendChild(link);
+                });
+            } else {
+                linksContainer.innerHTML = `<p class="text-xs text-gray-400">Nenhum responsável atribuído aos itens.</p>`
+            }
+
+            renderWeeklyCalendar(clienteId);
+            openModal('modal-detalhes-cliente');
+        }
+        
+        const renderViewResponsavel = (nomeResponsavel) => {
+            document.getElementById('app-container').classList.add('hidden');
+            const view = document.getElementById('view-responsavel');
+            view.classList.remove('hidden');
+
+            document.getElementById('responsavel-nome-titulo').textContent = nomeResponsavel;
+            const cardContainer = document.getElementById('tabela-responsavel');
+            const totalTarefasEl = document.getElementById('responsavel-total-tarefas');
+            const proximaTarefaEl = document.getElementById('responsavel-proxima-tarefa');
+            const clientesAtivosEl = document.getElementById('responsavel-clientes-ativos');
+
+            const tarefas = allCompras.filter(c => c.responsavel === nomeResponsavel && c.status !== 'finalizado');
+            
+            totalTarefasEl.textContent = tarefas.length;
+            const uniqueClientIds = [...new Set(tarefas.map(t => t.clienteId))];
+            clientesAtivosEl.textContent = uniqueClientIds.length;
+
+            const tarefasComPrazo = tarefas
+                .filter(t => t.terminoPrevisto)
+                .sort((a, b) => new Date(a.terminoPrevisto) - new Date(b.terminoPrevisto));
+
+            if (tarefasComPrazo.length > 0) {
+                const proxima = tarefasComPrazo[0];
+                proximaTarefaEl.textContent = `${proxima.servico} (em ${formatDate(proxima.terminoPrevisto)})`;
+            } else {
+                proximaTarefaEl.textContent = 'Nenhuma com prazo';
+            }
+
+            cardContainer.innerHTML = '';
+            if (tarefas.length === 0) {
+                cardContainer.innerHTML = `<p class="col-span-full text-center py-8 text-secondary">Nenhuma tarefa pendente para você.</p>`;
+                return;
+            }
+
+            tarefas.forEach(tarefa => {
+                const cliente = allClientes.find(c => c.id === tarefa.clienteId);
+                const card = document.createElement('div');
+                card.className = 'content-card'; 
+                
+                card.innerHTML = `
+                    <h3 class="text-xl font-bold">${tarefa.servico}</h3>
+                    <p class="text-sm font-semibold text-accent-brown">${cliente ? cliente.nome : 'Cliente não encontrado'}</p>
+                    <p class="text-xs text-secondary mb-4">${cliente ? cliente.endereco + ', ' + cliente.cidade : ''}</p>
+                    
+                    <div class="grid grid-cols-2 gap-4 text-sm border-t border-b border-border-color py-4 my-4">
+                        <div>
+                            <p class="font-semibold">Início Previsto</p>
+                            <p>${formatDate(tarefa.inicioPrevisto)}</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold">Término Previsto</p>
+                            <p>${formatDate(tarefa.terminoPrevisto)}</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="font-semibold text-sm">Descrição:</p>
+                        <p class="text-sm text-secondary">${tarefa.descricao || 'Nenhuma descrição.'}</p>
+                    </div>
+                    <div class="mt-2">
+                        <p class="font-semibold text-sm">Observações:</p>
+                        <p class="text-sm text-secondary">${tarefa.observacoes || 'Nenhuma observação.'}</p>
+                    </div>
+                `;
+                cardContainer.appendChild(card);
+            });
+        };
+
+        // --- CALENDAR FUNCTIONS ---
+        const renderWeeklyCalendar = (clienteId) => {
+            const container = document.getElementById('calendario-semanal');
+            container.innerHTML = '';
+            const today = new Date();
+            const dayOfWeek = today.getDay(); // 0 (Sun) to 6 (Sat)
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+            
+            const weekDays = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+
+            for(let i=0; i<7; i++) {
+                const day = new Date(startOfWeek);
+                day.setDate(startOfWeek.getDate() + i);
+                const isToday = day.toDateString() === today.toDateString();
+                
+                const dayContainer = document.createElement('div');
+                dayContainer.className = `p-2 rounded-lg min-h-[100px] border ${isToday ? '' : 'bg-main border-border-color'}`;
+                if(isToday) {
+                    dayContainer.style.backgroundColor = 'rgba(138, 90, 68, 0.4)';
+                }
+                dayContainer.innerHTML = `<p class="font-semibold text-sm text-center ${isToday ? 'text-primary' : 'text-primary'}">${weekDays[i]} <span class="font-normal ${isToday ? 'text-secondary' : 'text-secondary'}">${day.getDate()}</span></p>`;
+                
+                const tasksContainer = document.createElement('div');
+                tasksContainer.className = 'mt-2 space-y-1';
+
+                const tasksForDay = allCompras.filter(compra => {
+                    if (compra.clienteId !== clienteId || !compra.inicioPrevisto || !compra.terminoPrevisto) return false;
+                    const inicio = new Date(compra.inicioPrevisto + 'T00:00:00');
+                    const termino = new Date(compra.terminoPrevisto + 'T00:00:00');
+                    return day >= inicio && day <= termino;
+                });
+
+                tasksForDay.forEach(task => {
+                    const taskEl = document.createElement('div');
+                    const cliente = allClientes.find(c => c.id === task.clienteId);
+                    const bgColor = generateColorFromString(cliente?.nome || 'default');
+                    const textColor = getTextColorForBg(bgColor);
+                    taskEl.className = 'calendar-task';
+                    taskEl.style.backgroundColor = bgColor;
+                    taskEl.style.color = textColor;
+                    taskEl.style.borderColor = textColor === '#ffffff' ? 'transparent' : '#4a403a';
+                    taskEl.innerHTML = `${task.servico} <strong class="opacity-75">(${task.responsavel || 'N/A'})</strong>`;
+                    taskEl.title = `${cliente?.nome || ''} - ${task.servico} (${task.responsavel || 'N/A'}) - ${task.descricao || ''}`;
+                    tasksContainer.appendChild(taskEl);
+                });
+                
+                dayContainer.appendChild(tasksContainer);
+                container.appendChild(dayContainer);
+            }
+        };
+
+        const renderMonthlyCalendar = () => {
+            const { month, year, clienteId } = clientModalCalendarState;
+            const calBody = document.getElementById('cal-body');
+            if (!calBody) return; // FIX: Add guard clause
+            calBody.innerHTML = '';
+
+            document.getElementById('cal-month-year').textContent = new Date(year, month).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+            const firstDay = new Date(year, month, 1).getDay(); // 0-6
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            const tasksForMonth = allCompras.filter(compra => {
+                if (compra.clienteId !== clienteId || !compra.inicioPrevisto || !compra.terminoPrevisto) return false;
+                const inicio = new Date(compra.inicioPrevisto + 'T00:00:00');
+                const termino = new Date(compra.terminoPrevisto + 'T00:00:00');
+                return (inicio.getMonth() === month && inicio.getFullYear() === year) || 
+                       (termino.getMonth() === month && termino.getFullYear() === year) ||
+                       (inicio < new Date(year, month, 1) && termino > new Date(year, month, daysInMonth));
+            });
+            
+            for (let i = 0; i < firstDay; i++) {
+                calBody.innerHTML += `<div class="bg-gray-50 rounded"></div>`;
+            }
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dayCell = document.createElement('div');
+                dayCell.className = 'border border-border-color rounded p-1 min-h-[100px] flex flex-col';
+                
+                const dayNumber = document.createElement('span');
+                dayNumber.className = 'text-xs text-secondary';
+                dayNumber.textContent = i;
+                dayCell.appendChild(dayNumber);
+
+                const tasksContainer = document.createElement('div');
+                tasksContainer.className = 'flex-grow overflow-y-auto';
+
+                const currentDate = new Date(year, month, i);
+                const tasksForDay = tasksForMonth.filter(task => {
+                    const inicio = new Date(task.inicioPrevisto + 'T00:00:00');
+                    const termino = new Date(task.terminoPrevisto + 'T00:00:00');
+                    return currentDate >= inicio && currentDate <= termino;
+                });
+                
+                tasksForDay.forEach(task => {
+                    const taskEl = document.createElement('div');
+                    const cliente = allClientes.find(c => c.id === task.clienteId);
+                    const bgColor = generateColorFromString(cliente?.nome || 'default');
+                    const textColor = getTextColorForBg(bgColor);
+                    taskEl.className = 'calendar-task';
+                    taskEl.style.backgroundColor = bgColor;
+                    taskEl.style.color = textColor;
+                    taskEl.style.borderColor = textColor === '#ffffff' ? 'transparent' : '#4a403a';
+                    taskEl.innerHTML = `${task.servico} <strong class="opacity-75">(${task.responsavel || 'N/A'})</strong>`;
+                    taskEl.title = `${cliente?.nome || ''} - ${task.servico} (${task.responsavel || 'N/A'}) - ${task.descricao || ''}`;
+                    tasksContainer.appendChild(taskEl);
+                });
+
+                dayCell.appendChild(tasksContainer);
+                calBody.appendChild(dayCell);
+            }
+        };
+
+        const openCalendarioMensal = (clienteId) => {
+            const today = new Date();
+            clientModalCalendarState.month = today.getMonth();
+            clientModalCalendarState.year = today.getFullYear();
+            clientModalCalendarState.clienteId = clienteId;
+            renderMonthlyCalendar();
+            openModal('modal-calendario-mensal');
+        };
+
+        // --- DASHBOARD CALENDAR FUNCTIONS ---
+        const renderDashboardCalendar = () => {
+            if (dashboardCalendarState.view === 'weekly') {
+                renderDashboardWeekly();
+            } else {
+                renderDashboardMonthly();
+            }
+        };
+
+        const renderDashboardWeekly = () => {
+            const container = document.getElementById('dashboard-cal-semanal-grid');
+            container.innerHTML = '';
+            const current = dashboardCalendarState.date;
+            const dayOfWeek = current.getDay();
+            const startOfWeek = new Date(current);
+            startOfWeek.setDate(current.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+
+            document.getElementById('dashboard-cal-month-year').textContent = `Semana de ${startOfWeek.toLocaleDateString('pt-BR')}`;
+            const todayDate = new Date();
+
+            for(let i=0; i<7; i++) {
+                const day = new Date(startOfWeek);
+                day.setDate(startOfWeek.getDate() + i);
+                const isToday = day.toDateString() === todayDate.toDateString();
+                
+                const dayContainer = document.createElement('div');
+                dayContainer.className = `p-2 rounded-lg min-h-[120px] border ${isToday ? '' : 'bg-main border-border-color'}`;
+                if(isToday) {
+                    dayContainer.style.backgroundColor = 'rgba(138, 90, 68, 0.4)';
+                }
+                dayContainer.innerHTML = `<p class="font-semibold text-xs text-center text-primary">${day.getDate()}</p>`;
+                
+                const tasksContainer = document.createElement('div');
+                tasksContainer.className = 'mt-1 space-y-1';
+
+                const tasksForDay = allCompras.filter(compra => {
+                    if (!compra.inicioPrevisto || !compra.terminoPrevisto) return false;
+                    const inicio = new Date(compra.inicioPrevisto + 'T00:00:00');
+                    const termino = new Date(compra.terminoPrevisto + 'T00:00:00');
+                    return day >= inicio && day <= termino;
+                });
+
+                tasksForDay.forEach(task => {
+                    const cliente = allClientes.find(c => c.id === task.clienteId);
+                    const taskEl = document.createElement('div');
+                    const bgColor = generateColorFromString(cliente?.nome || 'default');
+                    const textColor = getTextColorForBg(bgColor);
+                    taskEl.className = 'calendar-task';
+                    taskEl.style.backgroundColor = bgColor;
+                    taskEl.style.color = textColor;
+                    taskEl.style.borderColor = textColor === '#ffffff' ? 'transparent' : '#4a403a';
+                    taskEl.innerHTML = `<strong>${cliente ? cliente.nome.split(' ')[0] : '??'}:</strong> ${task.servico}`;
+                    taskEl.title = `${cliente ? cliente.nome : ''} - ${task.servico}: ${task.descricao || ''}`;
+                    tasksContainer.appendChild(taskEl);
+                });
+                
+                dayContainer.appendChild(tasksContainer);
+                container.appendChild(dayContainer);
+            }
+        };
+
+        const renderDashboardMonthly = () => {
+            const container = document.getElementById('dashboard-cal-mensal-grid');
+            container.innerHTML = '';
+            const current = dashboardCalendarState.date;
+            const month = current.getMonth();
+            const year = current.getFullYear();
+            const todayDate = new Date();
+
+            document.getElementById('dashboard-cal-month-year').textContent = current.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            for (let i = 0; i < firstDay; i++) {
+                container.innerHTML += `<div class="bg-gray-50 rounded"></div>`;
+            }
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                const day = new Date(year, month, i);
+                const isToday = day.toDateString() === todayDate.toDateString();
+                const dayCell = document.createElement('div');
+                dayCell.className = `border rounded p-1 min-h-[110px] flex flex-col ${isToday ? '' : 'border-border-color'}`;
+                 if(isToday) {
+                    dayCell.style.backgroundColor = 'rgba(138, 90, 68, 0.4)';
+                }
+                
+                const dayNumber = document.createElement('span');
+                dayNumber.className = `text-xs ${isToday ? 'text-primary' : 'text-secondary'}`;
+                dayNumber.textContent = i;
+                dayCell.appendChild(dayNumber);
+
+                const tasksContainer = document.createElement('div');
+                tasksContainer.className = 'flex-grow overflow-y-auto';
+
+                const currentDate = new Date(year, month, i);
+                const tasksForDay = allCompras.filter(task => {
+                    if (!task.inicioPrevisto || !task.terminoPrevisto) return false;
+                    const inicio = new Date(task.inicioPrevisto + 'T00:00:00');
+                    const termino = new Date(task.terminoPrevisto + 'T00:00:00');
+                    return currentDate >= inicio && currentDate <= termino;
+                });
+                
+                tasksForDay.forEach(task => {
+                    const cliente = allClientes.find(c => c.id === task.clienteId);
+                    const taskEl = document.createElement('div');
+                    const bgColor = generateColorFromString(cliente?.nome || 'default');
+                    const textColor = getTextColorForBg(bgColor);
+                    taskEl.className = 'calendar-task';
+                    taskEl.style.backgroundColor = bgColor;
+                    taskEl.style.color = textColor;
+                    taskEl.style.borderColor = textColor === '#ffffff' ? 'transparent' : '#4a403a';
+                    taskEl.innerHTML = `<strong>${cliente ? cliente.nome.split(' ')[0] : '??'}:</strong> ${task.servico}`;
+                    taskEl.title = `${cliente ? cliente.nome : ''} - ${task.servico}: ${task.descricao || ''}`;
+                    tasksContainer.appendChild(taskEl);
+                });
+
+                dayCell.appendChild(tasksContainer);
+                container.appendChild(dayCell);
+            }
+        };
+
+
+        // --- FIRESTORE OPERATIONS ---
+
+        document.getElementById('form-cliente').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const osNumber = `OS-${Date.now().toString().slice(-6)}`;
+            try {
+                await addDoc(clientesCol, {
+                    os: osNumber,
+                    nome: document.getElementById('cliente-nome').value,
+                    cpf: document.getElementById('cliente-cpf').value,
+                    condominio: document.getElementById('cliente-condominio').value,
+                    endereco: document.getElementById('cliente-endereco').value,
+                    cidade: document.getElementById('cliente-cidade').value,
+                    orcamento: parseFloat(document.getElementById('cliente-orcamento').value) || 0,
+                    createdAt: new Date()
+                });
+                e.target.reset();
+                closeModal('modal-cliente');
+            } catch (error) { console.error("Erro ao cadastrar cliente: ", error); }
+        });
+
+        document.getElementById('form-fornecedor').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                await addDoc(fornecedoresCol, {
+                    nome: document.getElementById('fornecedor-nome').value,
+                    categoriaId: document.getElementById('fornecedor-categoria').value,
+                    createdAt: new Date()
+                });
+                e.target.reset();
+                closeModal('modal-fornecedor');
+            } catch (error) { console.error("Erro ao cadastrar fornecedor: ", error); }
+        });
+
+        document.getElementById('form-categoria').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                await addDoc(categoriasCol, {
+                    nome: document.getElementById('categoria-nome').value,
+                    createdAt: new Date()
+                });
+                e.target.reset();
+                closeModal('modal-categoria');
+            } catch (error) { console.error("Erro ao cadastrar categoria: ", error); }
+        });
+
+        document.getElementById('form-solicitacao').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                await addDoc(comprasCol, {
+                    clienteId: document.getElementById('sol-cliente').value,
+                    servico: document.getElementById('sol-servico').value,
+                    valor: parseFloat(document.getElementById('sol-valor').value) || 0,
+                    fornecedorId: document.getElementById('sol-fornecedor').value,
+                    ambiente: document.getElementById('sol-ambiente').value,
+                    responsavel: document.getElementById('sol-responsavel').value,
+                    dataCompra: document.getElementById('sol-data-compra').value,
+                    prazoEntrega: document.getElementById('sol-prazo-entrega').value,
+                    inicioPrevisto: document.getElementById('sol-inicio-previsto').value,
+                    terminoPrevisto: document.getElementById('sol-termino-previsto').value,
+                    descricao: document.getElementById('sol-descricao').value,
+                    observacoes: document.getElementById('sol-observacoes').value,
+                    status: 'nao-iniciado',
+                    createdAt: new Date()
+                });
+                e.target.reset();
+                document.getElementById('orcamento-info').classList.add('hidden');
+                closeModal('modal-solicitacao');
+            } catch (error) { console.error("Erro ao cadastrar compra: ", error); }
+        });
+        
+        document.addEventListener('click', async (e) => {
+            const statusButton = e.target.closest('.btn-status-change');
+            if (statusButton) {
+                const id = statusButton.dataset.id;
+                const status = statusButton.dataset.status;
+                try { await setDoc(doc(db, 'compras', id), { status: status }, { merge: true }); } 
+                catch (error) { console.error("Erro ao atualizar status: ", error); }
+            }
+            const deleteButton = e.target.closest('.btn-delete-compra');
+            if (deleteButton) {
+                const id = deleteButton.dataset.id;
+                try { await deleteDoc(doc(db, 'compras', id)); }
+                catch (error) { console.error("Erro ao excluir item: ", error); }
+            }
+        });
+
+        // --- EVENT LISTENERS (MODALS, NAV, TABS) ---
+        document.getElementById('btn-abrir-modal-cliente').addEventListener('click', () => openModal('modal-cliente'));
+        document.getElementById('btn-abrir-modal-fornecedor').addEventListener('click', () => openModal('modal-fornecedor'));
+        document.getElementById('btn-abrir-modal-categoria').addEventListener('click', () => openModal('modal-categoria'));
+        document.getElementById('btn-abrir-modal-solicitacao').addEventListener('click', () => openModal('modal-solicitacao'));
+        document.getElementById('btn-abrir-calendario-mensal').addEventListener('click', () => {
+            const clienteId = clientModalCalendarState.clienteId;
+            if(clienteId) openCalendarioMensal(clienteId);
+        });
+
+        modals.forEach(id => {
+            const modal = document.getElementById(id);
+            const closeButton = modal.querySelector(`#btn-fechar-${id}`);
+            if (closeButton) closeButton.addEventListener('click', () => closeModal(id));
+            
+            // This is a workaround for the two cancel buttons in the solicitation modal
+            if(id === 'modal-solicitacao') {
+                 modal.querySelector('#btn-fechar-modal-solicitacao-2').addEventListener('click', () => closeModal(id));
+            }
+
+            modal.addEventListener('click', (e) => {
+                if (e.target.id === id) closeModal(id);
+            });
+        });
+        
+        // Navegação pela Sidebar
+        const navLinks = {
+            dashboard: document.getElementById('nav-dashboard'),
+            compras: document.getElementById('nav-compras'),
+            cadastros: document.getElementById('nav-cadastros'),
+        };
+        const views = {
+            dashboard: document.getElementById('view-dashboard'),
+            compras: document.getElementById('view-compras'),
+            cadastros: document.getElementById('view-cadastros'),
+        };
+
+        const handleNavigation = (targetView) => {
+            Object.values(views).forEach(view => view.classList.add('hidden'));
+            Object.values(navLinks).forEach(link => link.classList.remove('nav-link-active'));
+            
+            views[targetView].classList.remove('hidden');
+            navLinks[targetView].classList.add('nav-link-active');
+        };
+
+        Object.keys(navLinks).forEach(key => {
+            navLinks[key].addEventListener('click', (e) => {
+                e.preventDefault();
+                handleNavigation(key);
+            });
+        });
+
+        // Navegação por Abas em Cadastros
+        const tabButtons = {
+            clientes: document.getElementById('tab-btn-clientes'),
+            fornecedores: document.getElementById('tab-btn-fornecedores'),
+        };
+        const tabContents = {
+            clientes: document.getElementById('tab-content-clientes'),
+            fornecedores: document.getElementById('tab-content-fornecedores'),
+        };
+
+        const handleTabSwitch = (targetTab) => {
+            Object.values(tabContents).forEach(content => content.classList.add('hidden'));
+            Object.values(tabButtons).forEach(button => button.classList.remove('tab-btn-active'));
+
+            tabContents[targetTab].classList.remove('hidden');
+            tabButtons[targetTab].classList.add('tab-btn-active');
+        };
+
+        tabButtons.clientes.addEventListener('click', () => handleTabSwitch('clientes'));
+        tabButtons.fornecedores.addEventListener('click', () => handleTabSwitch('fornecedores'));
+
+
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.btn-ver-mais');
+            if (btn) openDetalhesClienteModal(btn.dataset.id);
+        });
+
+        const updateOrcamentoInfo = () => {
+             const clienteId = document.getElementById('sol-cliente').value;
+             const valorItem = parseFloat(document.getElementById('sol-valor').value) || 0;
+             const infoBox = document.getElementById('orcamento-info');
+
+             if (!clienteId) { infoBox.classList.add('hidden'); return; }
+             const cliente = allClientes.find(c => c.id === clienteId);
+             if (!cliente) { infoBox.classList.add('hidden'); return; }
+
+             const gastoAtual = allCompras.filter(c => c.clienteId === clienteId).reduce((acc, item) => acc + item.valor, 0);
+             const gastoFuturo = gastoAtual + valorItem;
+             const percentual = cliente.orcamento > 0 ? (gastoFuturo / cliente.orcamento) * 100 : 0;
+             
+             document.getElementById('info-orcamento-total').textContent = formatCurrency(cliente.orcamento);
+             document.getElementById('info-orcamento-gasto').textContent = formatCurrency(gastoFuturo);
+             document.getElementById('info-orcamento-percentual').textContent = `${percentual.toFixed(1)}%`;
+             const barra = document.getElementById('info-orcamento-barra');
+             barra.style.width = `${Math.min(percentual, 100)}%`;
+
+             barra.classList.remove('bg-accent-green-dark', 'bg-amber-500', 'bg-red-600');
+             if (percentual > 100) barra.classList.add('bg-red-600');
+             else if (percentual > 85) barra.classList.add('bg-amber-500');
+             else barra.classList.add('bg-accent-green-dark');
+
+             infoBox.classList.remove('hidden');
+        };
+        document.getElementById('sol-cliente').addEventListener('change', updateOrcamentoInfo);
+        document.getElementById('sol-valor').addEventListener('input', updateOrcamentoInfo);
+
+        // Listeners de Filtros
+        ['filtro-compras-geral', 'filtro-compras-cliente', 'filtro-compras-responsavel', 'filtro-compras-status', 'filtro-compras-ocultar-finalizados'].forEach(id => {
+            const el = document.getElementById(id);
+            const event = el.type === 'checkbox' ? 'change' : 'input';
+            el.addEventListener(event, renderTabelaCompras);
+        });
+        ['filtro-cliente-nome', 'filtro-cliente-cpf', 'filtro-cliente-condominio', 'filtro-cliente-cidade'].forEach(id => {
+            document.getElementById(id).addEventListener('input', renderTabelaClientes);
+        });
+        ['filtro-fornecedor-nome', 'filtro-fornecedor-categoria'].forEach(id => {
+            const el = document.getElementById(id);
+            const event = el.tagName === 'SELECT' ? 'change' : 'input';
+            el.addEventListener(event, renderTabelaFornecedores);
+        });
+        ['filtro-resumo-cliente', 'filtro-resumo-condominio', 'filtro-resumo-cidade'].forEach(id => {
+            document.getElementById(id).addEventListener('input', renderControleClientes);
+        });
+        document.getElementById('filtro-resumo-status').addEventListener('change', renderControleClientes);
+
+
+        // Client Modal Calendar Navigation
+        document.getElementById('cal-prev-month').addEventListener('click', () => {
+            clientModalCalendarState.month--;
+            if (clientModalCalendarState.month < 0) {
+                clientModalCalendarState.month = 11;
+                clientModalCalendarState.year--;
+            }
+            renderMonthlyCalendar();
+        });
+        document.getElementById('cal-next-month').addEventListener('click', () => {
+            clientModalCalendarState.month++;
+            if (clientModalCalendarState.month > 11) {
+                clientModalCalendarState.month = 0;
+                clientModalCalendarState.year++;
+            }
+            renderMonthlyCalendar();
+        });
+
+        // Dashboard Calendar Listeners
+        document.getElementById('dashboard-cal-prev').addEventListener('click', () => {
+            if (dashboardCalendarState.view === 'weekly') {
+                dashboardCalendarState.date.setDate(dashboardCalendarState.date.getDate() - 7);
+            } else {
+                dashboardCalendarState.date.setMonth(dashboardCalendarState.date.getMonth() - 1);
+            }
+            renderDashboardCalendar();
+        });
+        document.getElementById('dashboard-cal-next').addEventListener('click', () => {
+            if (dashboardCalendarState.view === 'weekly') {
+                dashboardCalendarState.date.setDate(dashboardCalendarState.date.getDate() + 7);
+            } else {
+                dashboardCalendarState.date.setMonth(dashboardCalendarState.date.getMonth() + 1);
+            }
+            renderDashboardCalendar();
+        });
+        document.getElementById('btn-view-semanal').addEventListener('click', () => {
+            dashboardCalendarState.view = 'weekly';
+            document.getElementById('dashboard-cal-semanal').classList.remove('hidden');
+            document.getElementById('dashboard-cal-mensal').classList.add('hidden');
+            document.getElementById('btn-view-semanal').classList.add('view-btn-active');
+            document.getElementById('btn-view-mensal').classList.remove('view-btn-active');
+            renderDashboardCalendar();
+        });
+        document.getElementById('btn-view-mensal').addEventListener('click', () => {
+            dashboardCalendarState.view = 'monthly';
+            document.getElementById('dashboard-cal-semanal').classList.add('hidden');
+            document.getElementById('dashboard-cal-mensal').classList.remove('hidden');
+            document.getElementById('btn-view-semanal').classList.remove('view-btn-active');
+            document.getElementById('btn-view-mensal').classList.add('view-btn-active');
+            renderDashboardCalendar();
+        });
+
+        // --- CHATBOT TENKY.AI LOGIC ---
+        const chatbotWindow = document.getElementById('chatbot-window');
+        const chatbotIcon = document.getElementById('chatbot-icon');
+        const chatbotIconImg = document.getElementById('chatbot-icon-img');
+        const chatbotCloseBtn = document.getElementById('chatbot-close');
+        const chatbotForm = document.getElementById('chatbot-input-form');
+        const chatbotInput = document.getElementById('chatbot-input');
+        const chatbotMessages = document.getElementById('chatbot-messages');
+        const geminiApiKey = "AIzaSyD8Fxic6il27tVENoVsdgAOM9Whfk5__1s";
+        const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`;
+
+        chatbotIcon.addEventListener('click', () => {
+            chatbotWindow.classList.toggle('visible');
+        });
+
+        chatbotCloseBtn.addEventListener('click', () => {
+            chatbotWindow.classList.remove('visible');
+        });
+        
+        chatbotIcon.addEventListener('mouseover', () => {
+            chatbotIconImg.src = 'tenkyaioi.png';
+            chatbotIconImg.onerror = () => {
+                chatbotIconImg.onerror = null; // prevent infinite loop
+                chatbotIconImg.src = 'https://placehold.co/60x60/6d4534/FFFFFF?text=AI';
+            };
+        });
+
+        chatbotIcon.addEventListener('mouseout', () => {
+            chatbotIconImg.src = 'tenkyai.png';
+             chatbotIconImg.onerror = () => {
+                chatbotIconImg.onerror = null; // prevent infinite loop
+                chatbotIconImg.src = 'https://placehold.co/60x60/8A5A44/FFFFFF?text=AI';
+            };
+        });
+
+        const addMessage = (text, sender) => {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message', sender);
+            messageElement.textContent = text;
+            chatbotMessages.appendChild(messageElement);
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+            return messageElement;
+        };
+        
+        const addLoadingIndicator = () => {
+            const loadingElement = document.createElement('div');
+            loadingElement.classList.add('chat-message', 'bot', 'loading');
+            loadingElement.innerHTML = '<span></span><span></span><span></span>';
+            chatbotMessages.appendChild(loadingElement);
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+            return loadingElement;
+        };
+
+        const getSystemContext = () => {
+            // Helper to get status counts
+            const countStatus = (items) => {
+                const counts = items.reduce((acc, item) => {
+                    acc[item.status] = (acc[item.status] || 0) + 1;
+                    return acc;
+                }, {});
+                return Object.entries(counts).map(([status, count]) => `${count} ${status}`).join(', ');
+            };
+
+            // Simplified data for the prompt to avoid being too verbose
+            const simplifiedClientes = allClientes.map(c => ({ nome: c.nome, cidade: c.cidade, orcamento: c.orcamento }));
+            const simplifiedCompras = allCompras.map(c => {
+                const cliente = allClientes.find(cli => cli.id === c.clienteId);
+                return { servico: c.servico, status: c.status, valor: c.valor, cliente: cliente?.nome };
+            });
+
+            return `
+                Você é Tenky.Ai, um assessor virtual inteligente para um sistema de controle de obras.
+                Sua função é ser um assistente prestativo, informando, explicando e lembrando o usuário sobre os dados do sistema.
+                Seja conciso e amigável. Use os dados abaixo como contexto para responder.
+                Data e hora atual: ${new Date().toLocaleString('pt-BR')}
+
+                --- DADOS DO SISTEMA ---
+                - Total de Clientes: ${allClientes.length}
+                - Clientes: ${JSON.stringify(simplifiedClientes)}
+
+                - Total de Itens de Compra/Serviço: ${allCompras.length}
+                - Resumo de Status dos Itens: ${countStatus(allCompras) || 'Nenhum item cadastrado'}
+                - Compras/Serviços: ${JSON.stringify(simplifiedCompras)}
+
+                - Total de Fornecedores: ${allFornecedores.length}
+                - Fornecedores: ${allFornecedores.map(f => f.nome).join(', ')}
+                --- FIM DOS DADOS ---
+            `;
+        };
+
+        chatbotForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userInput = chatbotInput.value.trim();
+            if (!userInput) return;
+
+            addMessage(userInput, 'user');
+            chatbotInput.value = '';
+            const loadingIndicator = addLoadingIndicator();
+
+            try {
+                const systemContext = getSystemContext();
+                const payload = {
+                    contents: [{
+                        parts: [{
+                            text: `${systemContext}\n\nPergunta do usuário: "${userInput}"`
+                        }]
+                    }]
+                };
+
+                const response = await fetch(geminiApiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                chatbotMessages.removeChild(loadingIndicator);
+                
+                if (result.candidates && result.candidates.length > 0) {
+                    const botResponse = result.candidates[0].content.parts[0].text;
+                    addMessage(botResponse, 'bot');
+                } else {
+                    addMessage("Desculpe, não consegui processar sua solicitação no momento.", 'bot');
+                }
+
+            } catch (error) {
+                console.error("Erro ao contatar o Gemini:", error);
+                chatbotMessages.removeChild(loadingIndicator);
+                addMessage("Ops! Tive um problema para me conectar. Por favor, tente novamente mais tarde.", 'bot');
+            }
+        });
+
+
+        // --- INITIALIZATION & REALTIME LISTENERS ---
+        const startApp = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const nomeResponsavel = urlParams.get('responsavel');
+            
+            if (nomeResponsavel) {
+                renderViewResponsavel(nomeResponsavel);
+            }
+
+            // Ativa a aba de clientes por padrão em Cadastros
+            handleTabSwitch('clientes');
+            renderDashboardCalendar();
+
+            onSnapshot(clientesCol, (snapshot) => {
+                allClientes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                populateSelect('sol-cliente', allClientes, 'id', 'nome', 'Selecione um cliente');
+                populateSelect('filtro-compras-cliente', allClientes, 'id', 'nome', 'Todos Clientes');
+                renderTabelaClientes();
+                renderControleClientes();
+                renderDashboardCalendar();
+                if (nomeResponsavel) renderViewResponsavel(nomeResponsavel);
+            });
+
+            onSnapshot(fornecedoresCol, (snapshot) => {
+                allFornecedores = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                populateSelect('sol-fornecedor', allFornecedores, 'id', 'nome', 'Selecione um fornecedor');
+                renderTabelaFornecedores();
+            });
+
+            onSnapshot(categoriasCol, (snapshot) => {
+                allCategorias = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                populateSelect('fornecedor-categoria', allCategorias, 'id', 'nome', 'Selecione a categoria');
+                populateSelect('filtro-fornecedor-categoria', allCategorias, 'id', 'nome', 'Todas Categorias');
+                renderTabelaFornecedores(); 
+            });
+
+            onSnapshot(comprasCol, (snapshot) => {
+                allCompras = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const responsaveis = [...new Set(allCompras.map(c => c.responsavel).filter(Boolean))];
+                populateSelect('filtro-compras-responsavel', responsaveis.map(r => ({id: r, nome: r})), 'id', 'nome', 'Todos Responsáveis');
+                renderTabelaCompras();
+                renderTabelaClientes(); 
+                renderTabelaFornecedores(); 
+                renderControleClientes();
+                renderDashboardCalendar();
+                if (nomeResponsavel) renderViewResponsavel(nomeResponsavel);
+            });
+        };
+
+        startApp();
+    </script>
+</body>
+</html>
