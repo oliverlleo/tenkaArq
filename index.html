@@ -80,6 +80,40 @@
             box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
         }
 
+        /* Mobile Sidebar Specific Styles */
+        @media (max-width: 767px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100%;
+                width: 75%; /* Adjust width for mobile */
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+                z-index: 500; /* Above main content, below modals */
+                box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 499;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease, visibility 0.3s ease;
+            }
+            .overlay.visible {
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+
         /* --- BOTÕES E INPUTS --- */
         .btn-primary {
             background-color: var(--accent-green-dark);
@@ -111,6 +145,7 @@
             background-color: var(--bg-main);
             padding: 10px;
             transition: all 0.3s ease;
+            width: 100%; /* Ensure full width on mobile inputs */
         }
         input:focus, select:focus, textarea:focus {
             border-color: var(--accent-brown);
@@ -133,11 +168,12 @@
         }
         
         /* --- TABELAS --- */
-        table { border-collapse: separate; border-spacing: 0 8px; }
+        table { border-collapse: separate; border-spacing: 0 8px; width: 100%; } /* Ensure table takes full width */
         thead th {
             font-family: 'Lora', serif;
             color: var(--accent-green-dark);
             border-bottom: 2px solid var(--accent-green-light);
+            padding: 0.75rem 1.5rem; /* Adjust padding for mobile */
         }
         tbody tr {
             background-color: var(--bg-container);
@@ -160,41 +196,53 @@
         .table-container { background-color: transparent; padding: 0; box-shadow: none; border: none; }
         .table-container:hover { transform: none; box-shadow: none; }
 
-        /* Mobile table card view */
+        /* Mobile specific table styling for tabela-detalhes-cliente */
         @media (max-width: 767px) {
-            .table-responsive-card-view .table-header-hidden {
-                display: none; /* Hide table headers on small screens */
+            #tabela-detalhes-cliente, #tabela-detalhes-cliente thead, #tabela-detalhes-cliente tbody, #tabela-detalhes-cliente th, #tabela-detalhes-cliente td, #tabela-detalhes-cliente tr {
+                display: block;
             }
-            .table-responsive-card-view tbody tr {
-                display: block; /* Make each row a block */
+            #tabela-detalhes-cliente thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            #tabela-detalhes-cliente tbody tr {
                 margin-bottom: 1rem;
                 border: 1px solid var(--border-color);
                 border-radius: 12px;
                 padding: 1rem;
+                display: flex; /* Use flexbox for stacking */
+                flex-direction: column;
             }
-            .table-responsive-card-view tbody td {
-                display: block; /* Make each cell a block */
-                padding: 0.5rem 0;
-                text-align: left !important; /* Force text alignment */
-                border-bottom: 1px dashed var(--border-color); /* Separator for items */
+            #tabela-detalhes-cliente tbody td {
+                border: none;
+                position: relative;
+                padding-left: 0; /* Remove left padding */
+                text-align: left; /* Align text left */
+                padding-top: 0.5rem;
+                padding-bottom: 0.5rem;
             }
-            .table-responsive-card-view tbody td:last-child {
-                border-bottom: none; /* No border for the last cell */
+            #tabela-detalhes-cliente tbody td:first-child,
+            #tabela-detalhes-cliente tbody td:last-child {
+                border-radius: 0; /* Remove specific border radius for stacked cells */
             }
-            .table-responsive-card-view tbody td::before {
-                content: attr(data-label); /* Use data-label for pseudo-elements */
+            #tabela-detalhes-cliente tbody td::before {
+                content: attr(data-label);
                 font-weight: bold;
-                display: inline-block;
-                width: 100px; /* Adjust as needed */
-                margin-right: 10px;
+                display: block; /* Make label a block element */
+                margin-bottom: 0.25rem;
                 color: var(--text-secondary);
+                font-size: 0.875rem; /* text-sm */
             }
-             .table-responsive-card-view .status-badge {
-                margin-top: 0.5rem;
-                display: inline-block;
+            /* Specific adjustments for the content within table cells when stacked */
+            #tabela-detalhes-cliente td p {
+                text-align: left;
             }
-            .table-responsive-card-view .flex.items-center.space-x-3 {
-                justify-content: flex-start;
+            #tabela-detalhes-cliente td .status-badge {
+                display: inline-block; /* Keep badge inline */
+            }
+            #tabela-detalhes-cliente td .flex.items-center.space-x-2 {
+                justify-content: flex-start; /* Align action buttons to start */
                 margin-top: 0.5rem;
             }
         }
@@ -225,7 +273,7 @@
             font-weight: 600;
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap; /* Garante que o texto não quebre */
+            white-space: nowrap;
         }
         .calendar-task strong { font-weight: 700; }
         .view-btn-active {
@@ -238,6 +286,17 @@
         }
         #dashboard-calendar-container .grid div:hover {
             background-color: rgba(163, 177, 138, 0.2);
+        }
+        /* Adjust calendar cells for smaller screens */
+        @media (max-width: 767px) {
+            #dashboard-cal-semanal-grid .p-2, #dashboard-cal-mensal-grid .p-1 {
+                min-height: 80px; /* Smaller height for mobile calendar cells */
+                padding: 0.5rem;
+            }
+            .calendar-task {
+                font-size: 0.65rem; /* Smaller font for tasks */
+                padding: 2px 4px;
+            }
         }
 
         /* --- BARRA DE ROLAGEM --- */
@@ -413,128 +472,19 @@
             background-color: #6d4534;
         }
 
-        /* Mobile-specific adjustments */
-        @media (max-width: 767px) {
-            .sidebar {
-                position: fixed;
-                top: 0;
-                left: 0;
-                height: 100vh;
-                width: 75%; /* Adjust width for mobile sidebar */
-                z-index: 500;
-                transform: translateX(-100%);
-                transition: transform 0.3s ease-in-out;
-                box-shadow: 2px 0 5px rgba(0,0,0,0.2);
-            }
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            .sidebar-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0,0,0,0.5);
-                z-index: 490;
-                opacity: 0;
-                visibility: hidden;
-                transition: opacity 0.3s ease;
-            }
-            .sidebar-overlay.visible {
-                opacity: 1;
-                visibility: visible;
-            }
-            .main-content-header {
-                display: flex;
-                align-items: center;
-                padding: 1rem;
-                background-color: var(--bg-main); /* Match main background */
-                border-bottom: 1px solid var(--border-color);
-                position: sticky;
-                top: 0;
-                z-index: 100;
-            }
-            .main-content-header h1 {
-                font-size: 1.75rem; /* Adjust heading size */
-            }
-            .main-content-header p {
-                font-size: 0.875rem; /* Adjust sub-heading size */
-            }
-            #app-container {
-                flex-direction: column; /* Stack main content and sidebar */
-            }
-            .flex-1.flex.flex-col.overflow-hidden {
-                width: 100%; /* Take full width */
-            }
-            main {
-                padding: 1rem; /* Adjust main padding */
-            }
-            .grid-cols-1.md\:grid-cols-4.gap-4.mb-4 {
-                grid-template-columns: 1fr; /* Stack filters vertically */
-            }
-            .grid-cols-1.md\:grid-cols-3.gap-x-6.gap-y-4 {
-                grid-template-columns: 1fr; /* Stack form fields vertically */
-            }
-            .modal-content {
-                max-width: 95vw; /* Make modals wider on mobile */
-                margin: 1rem auto; /* Adjust margin for better fit */
-            }
-            #modal-detalhes-cliente .modal-content {
-                max-width: 95vw;
-            }
-            #modal-solicitacao .modal-content {
-                max-width: 95vw;
-            }
-            .grid-cols-1.md\:grid-cols-7.gap-2 {
-                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Adjust calendar columns */
-            }
-            .grid-cols-7.gap-1 {
-                grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); /* Adjust calendar columns */
-            }
-            .calendar-task {
-                font-size: 0.65rem; /* Smaller tasks in calendar */
-            }
-            .tab-btn {
-                font-size: 0.875rem; /* Smaller tab buttons */
-                padding-bottom: 0.5rem;
-            }
-            .space-x-8 {
-                gap: 1rem; /* Adjust gap for tabs */
-            }
-            .btn-primary, .btn-secondary {
-                width: 100%; /* Full width buttons */
-                text-align: center;
-                margin-top: 0.5rem;
-            }
-            .flex.justify-end.space-x-3 {
-                flex-direction: column; /* Stack modal buttons */
-                gap: 0.5rem;
-            }
-            .flex.justify-between.items-center.mb-4 {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.5rem;
-            }
-            .flex.items-center.space-x-2 {
-                flex-wrap: wrap; /* Allow calendar nav buttons to wrap */
-            }
-            #dashboard-cal-month-year {
-                width: auto; /* Allow month/year to take necessary width */
-                text-align: left;
-            }
-        }
     </style>
 </head>
 <body class="bg-main">
 
-    <!-- Sidebar Overlay for Mobile -->
-    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+    <!-- Overlay for mobile sidebar -->
+    <div id="sidebar-overlay" class="overlay"></div>
 
-    <div id="app-container" class="flex h-screen">
+    <div id="app-container" class="flex h-screen md:flex-row flex-col">
         <!-- Sidebar de Navegação -->
-        <!-- Hidden by default on small screens, shown on md and up -->
-        <aside id="sidebar" class="w-64 sidebar text-white flex flex-col z-50 md:relative md:translate-x-0 transform -translate-x-full transition-transform duration-300 ease-in-out">
+        <!-- Added fixed, inset-y-0, left-0, z-500, transform classes for mobile -->
+        <aside id="main-sidebar" class="w-64 sidebar text-white flex flex-col flex-shrink-0
+                                       md:static md:translate-x-0 transition-transform duration-300 ease-in-out
+                                       fixed inset-y-0 left-0 z-500 -translate-x-full">
             <div class="p-6 text-left">
                 <h2 class="text-2xl font-semibold uppercase">Controle de Obras</h2>
             </div>
@@ -560,67 +510,70 @@
         <!-- Conteúdo Principal -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <!-- Mobile Header with Hamburger Menu -->
-            <div class="main-content-header md:hidden">
-                <button id="hamburger-menu" class="p-2 mr-4 rounded-md focus:ring-2 focus:ring-accent-brown">
-                    <i class="fa-solid fa-bars text-primary text-xl"></i>
+            <header class="bg-white p-4 flex items-center justify-between md:hidden shadow-sm">
+                <button id="hamburger-menu" class="text-primary text-2xl">
+                    <i class="fa-solid fa-bars"></i>
                 </button>
-                <h1 class="text-2xl font-bold text-primary">Sistema de Obras</h1>
-            </div>
+                <h1 class="text-xl font-bold text-primary">Controle de Obras</h1>
+                <div class="w-8"></div> <!-- Spacer for alignment -->
+            </header>
 
             <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-8">
                 
                 <!-- VIEW: DASHBOARD (VISÃO GERAL) -->
                 <div id="view-dashboard">
                     <header class="mb-8">
-                        <h1 class="text-4xl font-bold">Visão Geral</h1>
-                        <p class="text-secondary">Acompanhe a agenda geral da obra e o resumo dos clientes.</p>
+                        <h1 class="text-3xl md:text-4xl font-bold">Visão Geral</h1> <!-- Adjusted font size -->
+                        <p class="text-secondary text-sm md:text-base">Acompanhe a agenda geral da obra e o resumo dos clientes.</p> <!-- Adjusted font size -->
                     </header>
 
                     <!-- Seção da Agenda Geral -->
                     <div class="mb-8 content-card">
-                           <header class="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center">
-                                <div>
-                                    <h2 class="text-2xl font-semibold">Agenda Geral</h2>
-                                    <p class="text-sm text-secondary">Calendário de todas as atividades previstas.</p>
-                                </div>
-                                <div class="flex flex-col md:flex-row items-start md:items-center space-y-2 md:space-y-0 md:space-x-2 mt-4 md:mt-0">
+                        <header class="mb-4 flex flex-col md:flex-row md:justify-between md:items-center"> <!-- Stack on mobile -->
+                            <div class="mb-4 md:mb-0">
+                                <h2 class="text-xl md:text-2xl font-semibold">Agenda Geral</h2>
+                                <p class="text-xs md:text-sm text-secondary">Calendário de todas as atividades previstas.</p>
+                            </div>
+                            <div class="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-2 w-full md:w-auto"> <!-- Stack on mobile -->
+                                <div class="flex items-center justify-center w-full md:w-auto space-x-2">
                                     <button id="dashboard-cal-prev" class="p-2 rounded-full hover:bg-gray-200 transition-colors"><i class="fa-solid fa-chevron-left"></i></button>
-                                    <h3 id="dashboard-cal-month-year" class="text-lg font-semibold w-full md:w-48 text-center"></h3>
+                                    <h3 id="dashboard-cal-month-year" class="text-base md:text-lg font-semibold w-full md:w-48 text-center"></h3>
                                     <button id="dashboard-cal-next" class="p-2 rounded-full hover:bg-gray-200 transition-colors"><i class="fa-solid fa-chevron-right"></i></button>
-                                    <div class="md:ml-4 w-full md:w-auto">
-                                        <span class="isolate inline-flex rounded-md shadow-sm w-full">
-                                            <button type="button" id="btn-view-semanal" class="relative inline-flex items-center rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10 view-btn-active flex-1">Semanal</button>
-                                            <button type="button" id="btn-view-mensal" class="relative -ml-px inline-flex items-center rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10 flex-1">Mensal</button>
-                                        </span>
-                                    </div>
                                 </div>
-                           </header>
-                           <div id="dashboard-calendar-container" class="p-4 rounded-xl overflow-x-auto">
-                                <div id="dashboard-cal-semanal" class="min-w-full">
-                                    <div class="grid grid-cols-7 gap-2 text-center text-sm font-semibold text-secondary mb-2">
-                                        <div>Segunda</div>
-                                        <div>Terça</div>
-                                        <div>Quarta</div>
-                                        <div>Quinta</div>
-                                        <div>Sexta</div>
-                                        <div>Sábado</div>
-                                        <div>Domingo</div>
-                                    </div>
-                                    <div id="dashboard-cal-semanal-grid" class="grid grid-cols-7 gap-2"></div>
+                                <div class="w-full md:w-auto flex justify-center md:justify-start mt-2 md:mt-0">
+                                    <span class="isolate inline-flex rounded-md shadow-sm">
+                                        <button type="button" id="btn-view-semanal" class="relative inline-flex items-center rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10 view-btn-active">Semanal</button>
+                                        <button type="button" id="btn-view-mensal" class="relative -ml-px inline-flex items-center rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10">Mensal</button>
+                                    </span>
                                 </div>
-                                <div id="dashboard-cal-mensal" class="hidden min-w-full">
-                                    <div class="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-secondary mb-2">
-                                        <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
-                                    </div>
-                                    <div id="dashboard-cal-mensal-grid" class="grid grid-cols-7 gap-1"></div>
+                            </div>
+                        </header>
+                        <div id="dashboard-calendar-container" class="p-2 md:p-4 rounded-xl">
+                            <div id="dashboard-cal-semanal">
+                                <div class="grid grid-cols-7 gap-1 md:gap-2 text-center text-xs md:text-sm font-semibold text-secondary mb-2">
+                                    <div>Segunda</div>
+                                    <div>Terça</div>
+                                    <div>Quarta</div>
+                                    <div>Quinta</div>
+                                    <div>Sexta</div>
+                                    <div>Sábado</div>
+                                    <div>Domingo</div>
                                 </div>
-                           </div>
+                                <div id="dashboard-cal-semanal-grid" class="grid grid-cols-7 gap-1 md:gap-2"></div>
+                            </div>
+                            <div id="dashboard-cal-mensal" class="hidden">
+                                <div class="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-secondary mb-2">
+                                    <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
+                                </div>
+                                <div id="dashboard-cal-mensal-grid" class="grid grid-cols-7 gap-1"></div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Seção de Cards de Cliente -->
                     <div>
-                        <h2 class="text-2xl font-semibold mb-4">Resumo dos Clientes</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 content-card">
+                        <h2 class="text-xl md:text-2xl font-semibold mb-4">Resumo dos Clientes</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 content-card"> <!-- Adjusted grid for filters -->
                             <input type="text" id="filtro-resumo-cliente" placeholder="Filtrar por cliente...">
                             <select id="filtro-resumo-status">
                                 <option value="">Todos os Status</option>
@@ -639,21 +592,21 @@
 
                 <!-- VIEW: COMPRAS -->
                 <div id="view-compras" class="hidden">
-                   <header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center">
-                        <div>
-                            <h1 class="text-4xl font-bold">Solicitação e Histórico</h1>
-                            <p class="text-secondary">Adicione e gerencie todas as compras e serviços.</p>
+                    <header class="mb-8 flex flex-col md:flex-row md:justify-between md:items-center"> <!-- Stack on mobile -->
+                        <div class="mb-4 md:mb-0">
+                            <h1 class="text-3xl md:text-4xl font-bold">Solicitação e Histórico</h1>
+                            <p class="text-secondary text-sm md:text-base">Adicione e gerencie todas as compras e serviços.</p>
                         </div>
-                       <button id="btn-abrir-modal-solicitacao" class="btn-primary inline-flex items-center px-4 py-2 mt-4 md:mt-0 w-full md:w-auto">
+                        <button id="btn-abrir-modal-solicitacao" class="btn-primary inline-flex items-center px-4 py-2 w-full md:w-auto justify-center"> <!-- Full width on mobile -->
                             <i class="fa-solid fa-plus mr-2"></i> Nova Solicitação
-                       </button>
+                        </button>
                     </header>
                     
                     <!-- Tabela de Compras -->
                     <div class="table-container content-card">
-                        <h2 class="text-2xl font-semibold mb-4">Histórico de Itens</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4">
-                            <input type="text" id="filtro-compras-geral" placeholder="Buscar em tudo..." class="col-span-1 md:col-span-2">
+                        <h2 class="text-xl md:text-2xl font-semibold mb-4">Histórico de Itens</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4"> <!-- Adjusted grid for filters -->
+                            <input type="text" id="filtro-compras-geral" placeholder="Buscar em tudo..." class="col-span-1 sm:col-span-2">
                             <select id="filtro-compras-cliente"></select>
                             <select id="filtro-compras-responsavel"></select>
                             <select id="filtro-compras-status">
@@ -670,19 +623,19 @@
                                 <label for="filtro-compras-ocultar-finalizados" class="ml-2 block text-sm">Ocultar Finalizados</label>
                             </div>
                         </div>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full table-responsive-card-view">
-                                <thead class="table-header-hidden md:table-header-visible">
+                        <div class="overflow-x-auto"> <!-- Added overflow-x-auto for table scrolling -->
+                            <table class="min-w-full">
+                                <thead>
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nº</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Cliente</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Serviço/Produto</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Ambiente</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Responsável</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Datas Previstas</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Duração</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Ações</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Nº</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Cliente</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Serviço/Produto</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Ambiente</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Responsável</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Datas Previstas</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Duração</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabela-compras"></tbody>
@@ -694,43 +647,43 @@
                 <!-- VIEW: CADASTROS -->
                 <div id="view-cadastros" class="hidden">
                     <header class="mb-8">
-                        <h1 class="text-4xl font-bold">Cadastros</h1>
-                        <p class="text-secondary">Gerencie seus clientes e fornecedores em um só lugar.</p>
+                        <h1 class="text-3xl md:text-4xl font-bold">Cadastros</h1>
+                        <p class="text-secondary text-sm md:text-base">Gerencie seus clientes e fornecedores em um só lugar.</p>
                     </header>
 
                     <div class="border-b border-border-color">
-                        <nav class="-mb-px flex space-x-4 md:space-x-8" aria-label="Tabs">
-                            <button id="tab-btn-clientes" type="button" class="tab-btn tab-btn-active flex-1 md:flex-none">Clientes</button>
-                            <button id="tab-btn-fornecedores" type="button" class="tab-btn flex-1 md:flex-none">Fornecedores</button>
+                        <nav class="-mb-px flex space-x-4 md:space-x-8" aria-label="Tabs"> <!-- Adjusted spacing -->
+                            <button id="tab-btn-clientes" type="button" class="tab-btn tab-btn-active">Clientes</button>
+                            <button id="tab-btn-fornecedores" type="button" class="tab-btn">Fornecedores</button>
                         </nav>
                     </div>
 
                     <div class="mt-6">
                         <!-- Clientes Content -->
                         <div id="tab-content-clientes">
-                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-                                <h2 class="text-2xl font-semibold mb-2 md:mb-0">Lista de Clientes</h2>
-                                <button id="btn-abrir-modal-cliente" class="btn-primary inline-flex items-center px-4 py-2 w-full md:w-auto">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4"> <!-- Stack on mobile -->
+                                <h2 class="text-xl md:text-2xl font-semibold mb-2 sm:mb-0">Lista de Clientes</h2>
+                                <button id="btn-abrir-modal-cliente" class="btn-primary inline-flex items-center px-4 py-2 w-full sm:w-auto justify-center"> <!-- Full width on mobile -->
                                     <i class="fa-solid fa-user-plus mr-2"></i> Novo Cliente
                                 </button>
                             </div>
                             <div class="table-container content-card">
-                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4"> <!-- Adjusted grid for filters -->
                                     <input type="text" id="filtro-cliente-nome" placeholder="Filtrar por nome...">
                                     <input type="text" id="filtro-cliente-cpf" placeholder="Filtrar por CPF/CNPJ...">
                                     <input type="text" id="filtro-cliente-condominio" placeholder="Filtrar por Condomínio...">
                                     <input type="text" id="filtro-cliente-cidade" placeholder="Filtrar por Cidade...">
                                 </div>
-                                <div class="overflow-x-auto">
-                                    <table class="min-w-full table-responsive-card-view">
-                                        <thead class="table-header-hidden md:table-header-visible">
+                                <div class="overflow-x-auto"> <!-- Added overflow-x-auto for table scrolling -->
+                                    <table class="min-w-full">
+                                        <thead>
                                             <tr>
-                                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">OS</th>
-                                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nome</th>
-                                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">CPF/CNPJ</th>
-                                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Endereço</th>
-                                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Orçamento</th>
-                                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Gasto Total</th>
+                                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">OS</th>
+                                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Nome</th>
+                                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">CPF/CNPJ</th>
+                                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Endereço</th>
+                                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Orçamento</th>
+                                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Gasto Total</th>
                                             </tr>
                                         </thead>
                                         <tbody id="tabela-clientes"></tbody>
@@ -741,24 +694,24 @@
 
                         <!-- Fornecedores Content -->
                         <div id="tab-content-fornecedores" class="hidden">
-                             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-                                <h2 class="text-2xl font-semibold mb-2 md:mb-0">Lista de Fornecedores</h2>
-                                <button id="btn-abrir-modal-fornecedor" class="btn-primary inline-flex items-center px-4 py-2 w-full md:w-auto">
+                             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4"> <!-- Stack on mobile -->
+                                <h2 class="text-xl md:text-2xl font-semibold mb-2 sm:mb-0">Lista de Fornecedores</h2>
+                                <button id="btn-abrir-modal-fornecedor" class="btn-primary inline-flex items-center px-4 py-2 w-full sm:w-auto justify-center"> <!-- Full width on mobile -->
                                     <i class="fa-solid fa-plus mr-2"></i> Novo Fornecedor
                                 </button>
                             </div>
                             <div class="table-container content-card">
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4"> <!-- Adjusted grid for filters -->
                                     <input type="text" id="filtro-fornecedor-nome" placeholder="Filtrar por nome...">
                                     <select id="filtro-fornecedor-categoria"></select>
                                 </div>
-                                <div class="overflow-x-auto">
-                                    <table class="min-w-full table-responsive-card-view">
-                                        <thead class="table-header-hidden md:table-header-visible">
+                                <div class="overflow-x-auto"> <!-- Added overflow-x-auto for table scrolling -->
+                                    <table class="min-w-full">
+                                        <thead>
                                             <tr>
-                                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nome</th>
-                                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Categoria</th>
-                                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Gasto Total</th>
+                                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Nome</th>
+                                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Categoria</th>
+                                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Gasto Total</th>
                                             </tr>
                                         </thead>
                                         <tbody id="tabela-fornecedores"></tbody>
@@ -775,12 +728,12 @@
     <!-- TELA RESTRITA POR RESPONSÁVEL -->
     <div id="view-responsavel" class="hidden">
         <div class="min-h-screen" style="background-color: var(--bg-main); background-image: url('data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23e0dcd1\' fill-opacity=\'0.4\'%3E%3Cpath d=\'M18 8h4v24h-4z M8 18h24v4H8z\'/%3E%3C/g%3E%3C/svg%3E');">
-            <div class="p-4 md:p-8 rounded-b-2xl mb-8" style="background-color: #1a1f1b;">
+            <div class="p-4 md:p-8 rounded-b-2xl mb-4 md:mb-8" style="background-color: #1a1f1b;"> <!-- Adjusted padding and margin -->
                 <div class="max-w-screen-lg mx-auto">
-                    <header class="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4">
-                        <img src="logo.png" alt="Logo" class="h-12" onerror="this.onerror=null;this.src='https://placehold.co/150x50/1a1f1b/FFFFFF?text=Logo';">
-                        <div>
-                            <h1 class="text-2xl md:text-3xl font-bold text-white">Tarefas de: <span id="responsavel-nome-titulo"></span></h1>
+                    <header class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4"> <!-- Stack on mobile -->
+                        <img src="logo.png" alt="Logo" class="h-10 md:h-12" onerror="this.onerror=null;this.src='https://placehold.co/150x50/1a1f1b/FFFFFF?text=Logo';">
+                        <div class="text-center sm:text-left">
+                            <h1 class="text-xl md:text-3xl font-bold text-white">Tarefas de: <span id="responsavel-nome-titulo"></span></h1>
                             <p class="text-gray-300 text-sm md:text-base">Acesso restrito às suas tarefas pendentes.</p>
                         </div>
                     </header>
@@ -788,18 +741,18 @@
             </div>
 
             <div class="max-w-screen-lg mx-auto px-4 md:px-8">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-4 md:mb-8"> <!-- Adjusted gap and margin -->
                     <div class="content-card text-center">
                         <p class="text-sm text-secondary">Tarefas Pendentes</p>
-                        <p class="text-4xl font-bold" id="responsavel-total-tarefas">0</p>
+                        <p class="text-3xl md:text-4xl font-bold" id="responsavel-total-tarefas">0</p>
                     </div>
                     <div class="content-card text-center">
                         <p class="text-sm text-secondary">Próxima Tarefa a Vencer</p>
-                        <p class="text-xl font-bold truncate" id="responsavel-proxima-tarefa">N/A</p>
+                        <p class="text-lg md:text-xl font-bold truncate" id="responsavel-proxima-tarefa">N/A</p>
                     </div>
                     <div class="content-card text-center">
                         <p class="text-sm text-secondary">Clientes Ativos</p>
-                        <p class="text-4xl font-bold" id="responsavel-clientes-ativos">0</p>
+                        <p class="text-3xl md:text-4xl font-bold" id="responsavel-clientes-ativos">0</p>
                     </div>
                 </div>
 
@@ -818,8 +771,8 @@
     <!-- MODAIS -->
     <!-- Modal Cliente -->
     <div id="modal-cliente" class="modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 invisible opacity-0 z-50">
-        <div class="modal-content rounded-lg shadow-xl w-full max-w-sm md:max-w-md p-6 transform scale-95 content-card">
-            <h3 class="text-2xl font-medium mb-4">Cadastrar Novo Cliente</h3>
+        <div class="modal-content rounded-lg shadow-xl w-full max-w-sm md:max-w-md p-6 transform scale-95 content-card"> <!-- Adjusted max-width -->
+            <h3 class="text-xl md:text-2xl font-medium mb-4">Cadastrar Novo Cliente</h3>
             <form id="form-cliente">
                 <div class="grid grid-cols-1 gap-4">
                     <input type="text" id="cliente-nome" placeholder="Nome Completo" required>
@@ -829,7 +782,7 @@
                     <input type="text" id="cliente-cidade" placeholder="Cidade" required>
                     <input type="number" step="0.01" id="cliente-orcamento" placeholder="Orçamento (R$)" required>
                 </div>
-                <div class="mt-6 flex flex-col md:flex-row justify-end space-y-3 md:space-y-0 md:space-x-3">
+                <div class="mt-6 flex justify-end space-x-3">
                     <button type="button" id="btn-fechar-modal-cliente" class="btn-secondary py-2 px-4">Cancelar</button>
                     <button type="submit" class="btn-primary py-2 px-4">Salvar Cliente</button>
                 </div>
@@ -839,8 +792,8 @@
 
     <!-- Modal Fornecedor -->
     <div id="modal-fornecedor" class="modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 invisible opacity-0 z-50">
-        <div class="modal-content rounded-lg shadow-xl w-full max-w-sm md:max-w-md p-6 transform scale-95 content-card">
-            <h3 class="text-2xl font-medium mb-4">Cadastrar Novo Fornecedor</h3>
+        <div class="modal-content rounded-lg shadow-xl w-full max-w-sm p-6 transform scale-95 content-card"> <!-- Adjusted max-width -->
+            <h3 class="text-xl md:text-2xl font-medium mb-4">Cadastrar Novo Fornecedor</h3>
             <form id="form-fornecedor">
                 <div class="grid grid-cols-1 gap-4">
                     <input type="text" id="fornecedor-nome" placeholder="Nome do Fornecedor" required>
@@ -851,7 +804,7 @@
                         <button type="button" id="btn-abrir-modal-categoria" class="flex-shrink-0 bg-accent-brown hover:bg-opacity-80 text-white font-bold py-2 px-3 rounded-full text-sm">+</button>
                     </div>
                 </div>
-                <div class="mt-6 flex flex-col md:flex-row justify-end space-y-3 md:space-y-0 md:space-x-3">
+                <div class="mt-6 flex justify-end space-x-3">
                     <button type="button" id="btn-fechar-modal-fornecedor" class="btn-secondary py-2 px-4">Cancelar</button>
                     <button type="submit" class="btn-primary py-2 px-4">Salvar Fornecedor</button>
                 </div>
@@ -861,11 +814,11 @@
 
     <!-- Modal Categoria -->
     <div id="modal-categoria" class="modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 invisible opacity-0 z-50">
-        <div class="modal-content rounded-lg shadow-xl w-full max-w-xs md:max-w-sm p-6 transform scale-95 content-card">
-            <h3 class="text-2xl font-medium mb-4">Nova Categoria</h3>
+        <div class="modal-content rounded-lg shadow-xl w-full max-w-xs p-6 transform scale-95 content-card"> <!-- Adjusted max-width -->
+            <h3 class="text-xl md:text-2xl font-medium mb-4">Nova Categoria</h3>
             <form id="form-categoria">
                 <input type="text" id="categoria-nome" placeholder="Nome da Categoria" required>
-                <div class="mt-6 flex flex-col md:flex-row justify-end space-y-3 md:space-y-0 md:space-x-3">
+                <div class="mt-6 flex justify-end space-x-3">
                     <button type="button" id="btn-fechar-modal-categoria" class="btn-secondary py-2 px-4">Cancelar</button>
                     <button type="submit" class="btn-primary py-2 px-4">Salvar</button>
                 </div>
@@ -875,95 +828,95 @@
     
     <!-- Modal Solicitacao -->
     <div id="modal-solicitacao" class="modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 invisible opacity-0 z-50">
-        <div class="modal-content rounded-lg shadow-xl w-full max-w-full md:max-w-5xl p-6 transform scale-95 content-card">
-               <div class="flex justify-between items-center mb-4">
-                   <h3 class="text-2xl font-medium">Nova Solicitação de Compra</h3>
-                   <button type="button" id="btn-fechar-modal-solicitacao" class="text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
-               </div>
-               <form id="form-solicitacao">
-                   <div class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 mb-4">
-                       <div><label for="sol-cliente" class="block text-sm font-medium">Cliente*</label><select id="sol-cliente" required class="mt-1 block w-full"></select></div>
-                       <div><label for="sol-fornecedor" class="block text-sm font-medium">Fornecedor*</label><select id="sol-fornecedor" required class="mt-1 block w-full"></select></div>
-                       <div><label for="sol-servico" class="block text-sm font-medium">Serviço/Produto*</label><input type="text" id="sol-servico" required class="mt-1 block w-full"></div>
-                       <div><label for="sol-valor" class="block text-sm font-medium">Valor (R$)*</label><input type="number" step="0.01" id="sol-valor" required class="mt-1 block w-full"></div>
-                       <div><label for="sol-ambiente" class="block text-sm font-medium">Ambiente</label><input type="text" id="sol-ambiente" class="mt-1 block w-full"></div>
-                       <div><label for="sol-responsavel" class="block text-sm font-medium">Responsável</label><input type="text" id="sol-responsavel" class="mt-1 block w-full"></div>
-                       <div><label for="sol-data-compra" class="block text-sm font-medium">Data da Compra*</label><input type="date" id="sol-data-compra" required class="mt-1 block w-full"></div>
-                       <div><label for="sol-prazo-entrega" class="block text-sm font-medium">Prazo de Entrega</label><input type="date" id="sol-prazo-entrega" class="mt-1 block w-full"></div>
-                       <div><label for="sol-inicio-previsto" class="block text-sm font-medium">Início Previsto</label><input type="date" id="sol-inicio-previsto" class="mt-1 block w-full"></div>
-                       <div><label for="sol-termino-previsto" class="block text-sm font-medium">Término Previsto</label><input type="date" id="sol-termino-previsto" class="mt-1 block w-full"></div>
-                   </div>
-                   <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-4">
-                       <div><label for="sol-descricao" class="block text-sm font-medium">Descrição</label><textarea id="sol-descricao" rows="3" class="mt-1 block w-full"></textarea></div>
-                       <div><label for="sol-observacoes" class="block text-sm font-medium">Observações</label><textarea id="sol-observacoes" rows="3" class="mt-1 block w-full"></textarea></div>
-                   </div>
-                    <div id="orcamento-info" class="text-sm p-3 rounded-md hidden mb-4">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <p>Orçamento Cliente: <strong id="info-orcamento-total"></strong></p>
-                                <p>Valor Gasto (com este item): <strong id="info-orcamento-gasto"></strong></p>
-                            </div>
-                            <p class="text-lg font-bold">Uso: <strong id="info-orcamento-percentual">0%</strong></p>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                            <div id="info-orcamento-barra" class="bg-green-600 h-2.5 rounded-full" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    <div class="flex flex-col md:flex-row justify-end items-center pt-4 border-t border-border-color space-y-3 md:space-y-0 md:space-x-3">
-                        <button type="button" id="btn-fechar-modal-solicitacao-2" class="btn-secondary py-2 px-4">Cancelar</button>
-                        <button type="submit" class="btn-primary inline-flex justify-center py-2 px-6">
-                            <i class="fa-solid fa-check mr-2"></i>Confirmar
-                        </button>
-                    </div>
-               </form>
+        <div class="modal-content rounded-lg shadow-xl w-full max-w-full md:max-w-5xl p-6 transform scale-95 content-card"> <!-- Adjusted max-width -->
+             <div class="flex justify-between items-center mb-4">
+                 <h3 class="text-xl md:text-2xl font-medium">Nova Solicitação de Compra</h3>
+                 <button type="button" id="btn-fechar-modal-solicitacao" class="text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+             </div>
+             <form id="form-solicitacao">
+                 <div class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 mb-4"> <!-- Adjusted grid for mobile -->
+                     <div><label for="sol-cliente" class="block text-sm font-medium">Cliente*</label><select id="sol-cliente" required class="mt-1 block w-full"></select></div>
+                     <div><label for="sol-fornecedor" class="block text-sm font-medium">Fornecedor*</label><select id="sol-fornecedor" required class="mt-1 block w-full"></select></div>
+                     <div><label for="sol-servico" class="block text-sm font-medium">Serviço/Produto*</label><input type="text" id="sol-servico" required class="mt-1 block w-full"></div>
+                     <div><label for="sol-valor" class="block text-sm font-medium">Valor (R$)*</label><input type="number" step="0.01" id="sol-valor" required class="mt-1 block w-full"></div>
+                     <div><label for="sol-ambiente" class="block text-sm font-medium">Ambiente</label><input type="text" id="sol-ambiente" class="mt-1 block w-full"></div>
+                     <div><label for="sol-responsavel" class="block text-sm font-medium">Responsável</label><input type="text" id="sol-responsavel" class="mt-1 block w-full"></div>
+                     <div><label for="sol-data-compra" class="block text-sm font-medium">Data da Compra*</label><input type="date" id="sol-data-compra" required class="mt-1 block w-full"></div>
+                     <div><label for="sol-prazo-entrega" class="block text-sm font-medium">Prazo de Entrega</label><input type="date" id="sol-prazo-entrega" class="mt-1 block w-full"></div>
+                     <div><label for="sol-inicio-previsto" class="block text-sm font-medium">Início Previsto</label><input type="date" id="sol-inicio-previsto" class="mt-1 block w-full"></div>
+                     <div><label for="sol-termino-previsto" class="block text-sm font-medium">Término Previsto</label><input type="date" id="sol-termino-previsto" class="mt-1 block w-full"></div>
+                 </div>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-4">
+                     <div><label for="sol-descricao" class="block text-sm font-medium">Descrição</label><textarea id="sol-descricao" rows="3" class="mt-1 block w-full"></textarea></div>
+                     <div><label for="sol-observacoes" class="block text-sm font-medium">Observações</label><textarea id="sol-observacoes" rows="3" class="mt-1 block w-full"></textarea></div>
+                 </div>
+                 <div id="orcamento-info" class="text-sm p-3 rounded-md hidden mb-4">
+                     <div class="flex justify-between items-center">
+                         <div>
+                             <p>Orçamento Cliente: <strong id="info-orcamento-total"></strong></p>
+                             <p>Valor Gasto (com este item): <strong id="info-orcamento-gasto"></strong></p>
+                         </div>
+                         <p class="text-lg font-bold">Uso: <strong id="info-orcamento-percentual">0%</strong></p>
+                     </div>
+                     <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                         <div id="info-orcamento-barra" class="bg-green-600 h-2.5 rounded-full" style="width: 0%"></div>
+                     </div>
+                 </div>
+                 <div class="flex justify-end items-center pt-4 border-t border-border-color space-x-3">
+                     <button type="button" id="btn-fechar-modal-solicitacao-2" class="btn-secondary py-2 px-4">Cancelar</button>
+                     <button type="submit" class="btn-primary inline-flex justify-center py-2 px-6">
+                         <i class="fa-solid fa-check mr-2"></i>Confirmar
+                     </button>
+                 </div>
+             </form>
         </div>
     </div>
 
     <!-- Modal Detalhes Cliente -->
     <div id="modal-detalhes-cliente" class="modal fixed inset-0 bg-black bg-opacity-75 p-4 invisible opacity-0 z-40 overflow-y-auto">
-        <div class="modal-content rounded-lg shadow-xl w-full max-w-full md:max-w-7xl p-6 transform scale-95 mx-auto my-8">
+        <div class="modal-content rounded-lg shadow-xl w-full max-w-full md:max-w-7xl p-6 transform scale-95 mx-auto my-8"> <!-- Adjusted max-width -->
             <div>
                 <div class="flex justify-between items-start mb-4">
                     <div>
-                        <h3 class="text-3xl font-bold" id="detalhes-cliente-nome"></h3>
+                        <h3 class="text-2xl md:text-3xl font-bold" id="detalhes-cliente-nome"></h3>
                         <p class="text-sm text-secondary" id="detalhes-cliente-os"></p>
                     </div>
                     <button type="button" id="btn-fechar-modal-detalhes-cliente" class="text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4"> <!-- Adjusted grid for mobile -->
                     <div class="content-card"><p class="text-sm text-secondary">Orçamento Previsto</p><p class="text-xl font-semibold" id="detalhes-cliente-orcamento"></p></div>
                     <div class="content-card"><p class="text-sm text-secondary">Valor Gasto</p><p class="text-xl font-semibold" id="detalhes-cliente-gasto"></p></div>
                     <div class="content-card" style="background-color: var(--accent-brown); color: white;"><p class="text-sm text-gray-200">Saldo</p><p class="text-xl font-semibold" id="detalhes-cliente-saldo"></p></div>
                 </div>
                 
                 <div class="mb-4">
-                    <h4 class="text-lg font-semibold mb-2">Acesso Rápido por Responsável:</h4>
+                    <h4 class="text-base md:text-lg font-semibold mb-2">Acesso Rápido por Responsável:</h4>
                     <div id="detalhes-cliente-links-responsaveis" class="flex flex-wrap gap-2"></div>
                 </div>
 
                 <div class="mt-4 mb-4">
                     <div class="flex justify-between items-center mb-2">
-                        <h4 class="text-lg font-semibold">Agenda da Semana</h4>
-                        <button id="btn-abrir-calendario-mensal" class="text-sm text-accent-brown hover:underline font-medium">
+                        <h4 class="text-base md:text-lg font-semibold">Agenda da Semana</h4>
+                        <button id="btn-abrir-calendario-mensal" class="text-xs md:text-sm text-accent-brown hover:underline font-medium"> <!-- Adjusted font size -->
                             Ver calendário completo <i class="fa-solid fa-calendar-days ml-1"></i>
                         </button>
                     </div>
-                    <div id="calendario-semanal" class="grid grid-cols-1 md:grid-cols-7 gap-2 overflow-x-auto"></div>
+                    <div id="calendario-semanal" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-2"></div> <!-- Adjusted grid for mobile -->
                 </div>
             </div>
             
             <div class="content-card mt-4">
-                <h4 class="text-lg font-semibold mb-2">Itens da Obra</h4>
+                <h4 class="text-base md:text-lg font-semibold mb-2">Itens da Obra</h4>
                 <div class="overflow-x-auto">
-                    <table class="min-w-full table-responsive-card-view">
-                        <thead class="table-header-hidden md:table-header-visible">
+                    <table class="min-w-full">
+                        <thead>
                             <tr>
-                                <th class="px-4 py-2 text-left text-xs font-medium uppercase w-2/5">Item</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium uppercase w-2/5">Datas</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium uppercase">Valor</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium uppercase">% Orçam.</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium uppercase">Status</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium uppercase">Ações</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium uppercase w-2/5">Item</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium uppercase w-2/5">Datas</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium uppercase">Valor</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium uppercase">% Orçam.</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium uppercase">Status</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium uppercase">Ações</th>
                             </tr>
                         </thead>
                         <tbody id="tabela-detalhes-cliente"></tbody>
@@ -975,11 +928,11 @@
 
     <!-- Modal Calendário Mensal -->
     <div id="modal-calendario-mensal" class="modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 invisible opacity-0 z-50">
-        <div class="modal-content rounded-lg shadow-xl w-full max-w-full md:max-w-4xl p-6 transform scale-95 flex flex-col h-[90vh] content-card">
+        <div class="modal-content rounded-lg shadow-xl w-full max-w-full md:max-w-4xl p-6 transform scale-95 flex flex-col h-[90vh] content-card"> <!-- Adjusted max-width -->
             <div class="flex justify-between items-center mb-4">
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2 md:space-x-4">
                     <button id="cal-prev-month" class="p-2 rounded-full hover:bg-gray-100"><i class="fa-solid fa-chevron-left"></i></button>
-                    <h3 id="cal-month-year" class="text-xl font-medium w-40 text-center"></h3>
+                    <h3 id="cal-month-year" class="text-lg md:text-xl font-medium w-full md:w-40 text-center"></h3>
                     <button id="cal-next-month" class="p-2 rounded-full hover:bg-gray-100"><i class="fa-solid fa-chevron-right"></i></button>
                 </div>
                 <button type="button" id="btn-fechar-modal-calendario-mensal" class="text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
@@ -987,7 +940,7 @@
             <div class="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-secondary mb-2">
                 <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
             </div>
-            <div id="cal-body" class="grid grid-cols-7 gap-1 flex-grow overflow-y-auto overflow-x-auto"></div>
+            <div id="cal-body" class="grid grid-cols-7 gap-1 flex-grow overflow-y-auto"></div>
         </div>
     </div>
 
@@ -999,8 +952,7 @@
                 <button id="chatbot-close">&times;</button>
             </div>
             <div id="chatbot-messages">
-                   <!-- Updated initial message for Tenky.Ai -->
-                   <div class="chat-message bot">Olá! Sou Tenky.Ai seu assistente Virtual. Como posso ajudar hoje com suas obras?</div>
+                <div class="chat-message bot">Olá! Sou seu assessor virtual. Como posso ajudar hoje com suas obras?</div>
             </div>
             <div id="chatbot-input-container">
                 <form id="chatbot-input-form">
@@ -1012,7 +964,7 @@
             </div>
         </div>
         <div id="chatbot-icon">
-               <img id="chatbot-icon-img" src="tenkyai.png" alt="Chatbot Icon" onerror="this.onerror=null;this.src='https://placehold.co/60x60/8A5A44/FFFFFF?text=AI';">
+             <img id="chatbot-icon-img" src="tenkyai.png" alt="Chatbot Icon" onerror="this.onerror=null;this.src='https://placehold.co/60x60/8A5A44/FFFFFF?text=AI';">
         </div>
     </div>
 
@@ -1119,7 +1071,6 @@
         };
 
         // --- RENDER FUNCTIONS ---
-        const isMobileView = () => window.innerWidth < 768; // Tailwind's 'md' breakpoint is 768px
 
         const populateSelect = (selectId, data, valueField, textField, placeholder) => {
             const select = document.getElementById(selectId);
@@ -1174,53 +1125,28 @@
                 const statusInfo = statusMap[compra.status] || statusMap['nao-iniciado'];
 
                 const row = document.createElement('tr');
-                if (isMobileView()) {
-                    row.innerHTML = `
-                        <td data-label="Nº" class="whitespace-nowrap text-sm font-medium text-primary">${index + 1}</td>
-                        <td data-label="Cliente" class="whitespace-nowrap text-sm text-secondary">${cliente?.nome || 'N/A'}</td>
-                        <td data-label="Serviço/Produto" class="whitespace-nowrap text-sm font-medium text-primary">${compra.servico}</td>
-                        <td data-label="Ambiente" class="whitespace-nowrap text-sm text-secondary">${compra.ambiente || 'N/A'}</td>
-                        <td data-label="Responsável" class="whitespace-nowrap text-sm text-secondary">${compra.responsavel || 'N/A'}</td>
-                        <td data-label="Datas Previstas" class="whitespace-nowrap text-sm text-secondary">${formatDate(compra.inicioPrevisto)} - ${formatDate(compra.terminoPrevisto)}</td>
-                        <td data-label="Duração" class="whitespace-nowrap text-sm text-secondary">${calculateDays(compra.inicioPrevisto, compra.terminoPrevisto)}</td>
-                        <td data-label="Status" class="whitespace-nowrap text-sm">
-                            <span class="status-badge ${statusInfo.color}">${statusInfo.text}</span>
-                        </td>
-                        <td data-label="Ações" class="whitespace-nowrap text-right text-sm font-medium">
-                            <div class="flex items-center space-x-3 text-lg">
-                                ${compra.status !== 'em-andamento' ? `<button title="Em Andamento" data-id="${compra.id}" data-status="em-andamento" class="btn-status-change text-blue-600 hover:text-blue-800"><i class="fa-solid fa-play"></i></button>` : ''}
-                                ${compra.status !== 'parado' ? `<button title="Parado" data-id="${compra.id}" data-status="parado" class="btn-status-change text-yellow-500 hover:text-yellow-700"><i class="fa-solid fa-pause"></i></button>` : ''}
-                                ${compra.status !== 'interrompido' ? `<button title="Interrompido" data-id="${compra.id}" data-status="interrompido" class="btn-status-change text-orange-500 hover:text-orange-700"><i class="fa-solid fa-triangle-exclamation"></i></button>` : ''}
-                                ${compra.status !== 'atrasado' ? `<button title="Atrasado" data-id="${compra.id}" data-status="atrasado" class="btn-status-change text-red-500 hover:text-red-700"><i class="fa-solid fa-clock"></i></button>` : ''}
-                                ${compra.status !== 'finalizado' ? `<button title="Finalizado" data-id="${compra.id}" data-status="finalizado" class="btn-status-change text-green-600 hover:text-green-800"><i class="fa-solid fa-check-double"></i></button>` : ''}
-                                <button title="Excluir" data-id="${compra.id}" class="btn-delete-compra text-gray-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
-                            </div>
-                        </td>
-                    `;
-                } else {
-                    row.innerHTML = `
-                        <td class="whitespace-nowrap text-sm font-medium text-primary">${index + 1}</td>
-                        <td class="whitespace-nowrap text-sm text-secondary">${cliente?.nome || 'N/A'}</td>
-                        <td class="whitespace-nowrap text-sm font-medium text-primary">${compra.servico}</td>
-                        <td class="whitespace-nowrap text-sm text-secondary">${compra.ambiente || 'N/A'}</td>
-                        <td class="whitespace-nowrap text-sm text-secondary">${compra.responsavel || 'N/A'}</td>
-                        <td class="whitespace-nowrap text-sm text-secondary">${formatDate(compra.inicioPrevisto)} - ${formatDate(compra.terminoPrevisto)}</td>
-                        <td class="whitespace-nowrap text-sm text-secondary">${calculateDays(compra.inicioPrevisto, compra.terminoPrevisto)}</td>
-                        <td class="whitespace-nowrap text-sm">
-                            <span class="status-badge ${statusInfo.color}">${statusInfo.text}</span>
-                        </td>
-                        <td class="whitespace-nowrap text-right text-sm font-medium">
-                            <div class="flex items-center space-x-3 text-lg">
-                                ${compra.status !== 'em-andamento' ? `<button title="Em Andamento" data-id="${compra.id}" data-status="em-andamento" class="btn-status-change text-blue-600 hover:text-blue-800"><i class="fa-solid fa-play"></i></button>` : ''}
-                                ${compra.status !== 'parado' ? `<button title="Parado" data-id="${compra.id}" data-status="parado" class="btn-status-change text-yellow-500 hover:text-yellow-700"><i class="fa-solid fa-pause"></i></button>` : ''}
-                                ${compra.status !== 'interrompido' ? `<button title="Interrompido" data-id="${compra.id}" data-status="interrompido" class="btn-status-change text-orange-500 hover:text-orange-700"><i class="fa-solid fa-triangle-exclamation"></i></button>` : ''}
-                                ${compra.status !== 'atrasado' ? `<button title="Atrasado" data-id="${compra.id}" data-status="atrasado" class="btn-status-change text-red-500 hover:text-red-700"><i class="fa-solid fa-clock"></i></button>` : ''}
-                                ${compra.status !== 'finalizado' ? `<button title="Finalizado" data-id="${compra.id}" data-status="finalizado" class="btn-status-change text-green-600 hover:text-green-800"><i class="fa-solid fa-check-double"></i></button>` : ''}
-                                <button title="Excluir" data-id="${compra.id}" class="btn-delete-compra text-gray-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
-                            </div>
-                        </td>
-                    `;
-                }
+                row.innerHTML = `
+                    <td class="whitespace-nowrap text-sm font-medium text-primary">${index + 1}</td>
+                    <td class="whitespace-nowrap text-sm text-secondary">${cliente?.nome || 'N/A'}</td>
+                    <td class="whitespace-nowrap text-sm font-medium text-primary">${compra.servico}</td>
+                    <td class="whitespace-nowrap text-sm text-secondary">${compra.ambiente || 'N/A'}</td>
+                    <td class="whitespace-nowrap text-sm text-secondary">${compra.responsavel || 'N/A'}</td>
+                    <td class="whitespace-nowrap text-sm text-secondary">${formatDate(compra.inicioPrevisto)} - ${formatDate(compra.terminoPrevisto)}</td>
+                    <td class="whitespace-nowrap text-sm text-secondary">${calculateDays(compra.inicioPrevisto, compra.terminoPrevisto)}</td>
+                    <td class="whitespace-nowrap text-sm">
+                        <span class="status-badge ${statusInfo.color}">${statusInfo.text}</span>
+                    </td>
+                    <td class="whitespace-nowrap text-right text-sm font-medium">
+                        <div class="flex items-center space-x-3 text-lg">
+                            ${compra.status !== 'em-andamento' ? `<button title="Em Andamento" data-id="${compra.id}" data-status="em-andamento" class="btn-status-change text-blue-600 hover:text-blue-800"><i class="fa-solid fa-play"></i></button>` : ''}
+                            ${compra.status !== 'parado' ? `<button title="Parado" data-id="${compra.id}" data-status="parado" class="btn-status-change text-yellow-500 hover:text-yellow-700"><i class="fa-solid fa-pause"></i></button>` : ''}
+                            ${compra.status !== 'interrompido' ? `<button title="Interrompido" data-id="${compra.id}" data-status="interrompido" class="btn-status-change text-orange-500 hover:text-orange-700"><i class="fa-solid fa-triangle-exclamation"></i></button>` : ''}
+                            ${compra.status !== 'atrasado' ? `<button title="Atrasado" data-id="${compra.id}" data-status="atrasado" class="btn-status-change text-red-500 hover:text-red-700"><i class="fa-solid fa-clock"></i></button>` : ''}
+                            ${compra.status !== 'finalizado' ? `<button title="Finalizado" data-id="${compra.id}" data-status="finalizado" class="btn-status-change text-green-600 hover:text-green-800"><i class="fa-solid fa-check-double"></i></button>` : ''}
+                            <button title="Excluir" data-id="${compra.id}" class="btn-delete-compra text-gray-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </td>
+                `;
                 tbody.appendChild(row);
             });
         };
@@ -1255,25 +1181,14 @@
                 const percentualGasto = cliente.orcamento > 0 ? (gastoTotal / cliente.orcamento) * 100 : 0;
                 const gastoColorClass = getPercentualColor(percentualGasto);
 
-                if (isMobileView()) {
-                    row.innerHTML = `
-                        <td data-label="OS" class="whitespace-nowrap text-sm font-medium text-primary">${cliente.os}</td>
-                        <td data-label="Nome" class="whitespace-nowrap text-sm font-medium text-primary">${cliente.nome}</td>
-                        <td data-label="CPF/CNPJ" class="whitespace-nowrap text-sm text-secondary">${cliente.cpf || 'N/A'}</td>
-                        <td data-label="Endereço" class="whitespace-nowrap text-sm text-secondary">${cliente.endereco}, ${cliente.cidade}</td>
-                        <td data-label="Orçamento" class="whitespace-nowrap text-sm text-secondary">${formatCurrency(cliente.orcamento)}</td>
-                        <td data-label="Gasto Total" class="whitespace-nowrap text-sm ${gastoColorClass}">${formatCurrency(gastoTotal)}</td>
-                    `;
-                } else {
-                    row.innerHTML = `
-                        <td class="whitespace-nowrap text-sm font-medium text-primary">${cliente.os}</td>
-                        <td class="whitespace-nowrap text-sm font-medium text-primary">${cliente.nome}</td>
-                        <td class="whitespace-nowrap text-sm text-secondary">${cliente.cpf || 'N/A'}</td>
-                        <td class="whitespace-nowrap text-sm text-secondary">${cliente.endereco}, ${cliente.cidade}</td>
-                        <td class="whitespace-nowrap text-sm text-secondary">${formatCurrency(cliente.orcamento)}</td>
-                        <td class="whitespace-nowrap text-sm ${gastoColorClass}">${formatCurrency(gastoTotal)}</td>
-                    `;
-                }
+                row.innerHTML = `
+                    <td class="whitespace-nowrap text-sm font-medium text-primary">${cliente.os}</td>
+                    <td class="whitespace-nowrap text-sm font-medium text-primary">${cliente.nome}</td>
+                    <td class="whitespace-nowrap text-sm text-secondary">${cliente.cpf || 'N/A'}</td>
+                    <td class="whitespace-nowrap text-sm text-secondary">${cliente.endereco}, ${cliente.cidade}</td>
+                    <td class="whitespace-nowrap text-sm text-secondary">${formatCurrency(cliente.orcamento)}</td>
+                    <td class="whitespace-nowrap text-sm ${gastoColorClass}">${formatCurrency(gastoTotal)}</td>
+                `;
                 tbody.appendChild(row);
             });
         };
@@ -1303,19 +1218,11 @@
 
             filteredFornecedores.forEach(fornecedor => {
                 const row = document.createElement('tr');
-                if (isMobileView()) {
-                    row.innerHTML = `
-                        <td data-label="Nome" class="whitespace-nowrap text-sm font-medium text-primary">${fornecedor.nome}</td>
-                        <td data-label="Categoria" class="whitespace-nowrap text-sm text-secondary">${fornecedor.categoriaNome}</td>
-                        <td data-label="Gasto Total" class="whitespace-nowrap text-sm font-semibold text-primary">${formatCurrency(fornecedor.gastoTotal)}</td>
-                    `;
-                } else {
-                    row.innerHTML = `
-                        <td class="whitespace-nowrap text-sm font-medium text-primary">${fornecedor.nome}</td>
-                        <td class="whitespace-nowrap text-sm text-secondary">${fornecedor.categoriaNome}</td>
-                        <td class="whitespace-nowrap text-sm font-semibold text-primary">${formatCurrency(fornecedor.gastoTotal)}</td>
-                    `;
-                }
+                row.innerHTML = `
+                    <td class="whitespace-nowrap text-sm font-medium text-primary">${fornecedor.nome}</td>
+                    <td class="whitespace-nowrap text-sm text-secondary">${fornecedor.categoriaNome}</td>
+                    <td class="whitespace-nowrap text-sm font-semibold text-primary">${formatCurrency(fornecedor.gastoTotal)}</td>
+                `;
                 tbody.appendChild(row);
             });
         };
@@ -1421,7 +1328,7 @@
             tbody.innerHTML = '';
 
             if (comprasCliente.length === 0) {
-                   tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-secondary">Nenhum item para este cliente.</td></tr>`;
+                 tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-secondary">Nenhum item para este cliente.</td></tr>`;
             } else {
                 comprasCliente.forEach(item => {
                     const percentual = cliente.orcamento > 0 ? (item.valor / cliente.orcamento) * 100 : 0;
@@ -1437,63 +1344,34 @@
                     const statusInfo = statusMap[item.status] || statusMap['nao-iniciado'];
 
                     const row = document.createElement('tr');
-                    if (isMobileView()) {
-                        row.innerHTML = `
-                            <td data-label="Item" class="align-middle break-words">
-                                <p class="text-sm font-semibold text-primary">${item.servico}</p>
-                                <p class="text-xs text-secondary">${item.descricao || 'Sem descrição'}</p>
-                                <p class="text-xs text-secondary mt-1"><strong>Ambiente:</strong> ${item.ambiente || 'N/A'} | <strong>Resp:</strong> ${item.responsavel || 'N/A'}</p>
-                            </td>
-                            <td data-label="Datas" class="align-middle break-words text-sm text-secondary">
-                                <p><strong>Compra:</strong> ${formatDate(item.dataCompra)}</p>
-                                <p><strong>Entrega:</strong> ${formatDate(item.prazoEntrega)}</p>
-                                <p><strong>Previsto:</strong> ${formatDate(item.inicioPrevisto)} a ${formatDate(item.terminoPrevisto)} (${calculateDays(item.inicioPrevisto, item.terminoPrevisto)})</p>
-                            </td>
-                            <td data-label="Valor" class="align-middle break-words text-sm font-semibold text-primary">${formatCurrency(item.valor)}</td>
-                            <td data-label="% Orçam." class="align-middle break-words text-sm ${percentualColorClass}">${percentual.toFixed(1)}%</td>
-                            <td data-label="Status" class="align-middle">
-                                <span class="status-badge ${statusInfo.color}">${statusInfo.text}</span>
-                            </td>
-                            <td data-label="Ações" class="align-middle">
-                                <div class="flex items-center space-x-2 text-lg">
-                                    ${item.status !== 'em-andamento' ? `<button title="Em Andamento" data-id="${item.id}" data-status="em-andamento" class="btn-status-change text-blue-600 hover:text-blue-800"><i class="fa-solid fa-play"></i></button>` : ''}
-                                    ${item.status !== 'parado' ? `<button title="Parado" data-id="${item.id}" data-status="parado" class="btn-status-change text-yellow-500 hover:text-yellow-700"><i class="fa-solid fa-pause"></i></button>` : ''}
-                                    ${item.status !== 'interrompido' ? `<button title="Interrompido" data-id="${item.id}" data-status="interrompido" class="btn-status-change text-orange-500 hover:text-orange-700"><i class="fa-solid fa-triangle-exclamation"></i></button>` : ''}
-                                    ${item.status !== 'atrasado' ? `<button title="Atrasado" data-id="${item.id}" data-status="atrasado" class="btn-status-change text-red-500 hover:text-red-700"><i class="fa-solid fa-clock"></i></button>` : ''}
-                                    ${item.status !== 'finalizado' ? `<button title="Finalizado" data-id="${item.id}" data-status="finalizado" class="btn-status-change text-green-600 hover:text-green-800"><i class="fa-solid fa-check-double"></i></button>` : ''}
-                                    <button title="Excluir" data-id="${item.id}" class="btn-delete-compra text-gray-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
-                                </div>
-                            </td>
-                        `;
-                    } else {
-                        row.innerHTML = `
-                            <td class="align-middle break-words">
-                                <p class="text-sm font-semibold text-primary">${item.servico}</p>
-                                <p class="text-xs text-secondary">${item.descricao || 'Sem descrição'}</p>
-                                <p class="text-xs text-secondary mt-1"><strong>Ambiente:</strong> ${item.ambiente || 'N/A'} | <strong>Resp:</strong> ${item.responsavel || 'N/A'}</p>
-                            </td>
-                               <td class="align-middle break-words text-sm text-secondary">
-                                <p><strong>Compra:</strong> ${formatDate(item.dataCompra)}</p>
-                                <p><strong>Entrega:</strong> ${formatDate(item.prazoEntrega)}</p>
-                                <p><strong>Previsto:</strong> ${formatDate(item.inicioPrevisto)} a ${formatDate(item.terminoPrevisto)} (${calculateDays(item.inicioPrevisto, item.terminoPrevisto)})</p>
-                            </td>
-                            <td class="align-middle break-words text-sm font-semibold text-primary">${formatCurrency(item.valor)}</td>
-                            <td class="align-middle break-words text-sm ${percentualColorClass}">${percentual.toFixed(1)}%</td>
-                            <td class="align-middle">
-                                <span class="status-badge ${statusInfo.color}">${statusInfo.text}</span>
-                            </td>
-                            <td class="align-middle">
-                                <div class="flex items-center space-x-2 text-lg">
-                                    ${item.status !== 'em-andamento' ? `<button title="Em Andamento" data-id="${item.id}" data-status="em-andamento" class="btn-status-change text-blue-600 hover:text-blue-800"><i class="fa-solid fa-play"></i></button>` : ''}
-                                    ${item.status !== 'parado' ? `<button title="Parado" data-id="${item.id}" data-status="parado" class="btn-status-change text-yellow-500 hover:text-yellow-700"><i class="fa-solid fa-pause"></i></button>` : ''}
-                                    ${item.status !== 'interrompido' ? `<button title="Interrompido" data-id="${item.id}" data-status="interrompido" class="btn-status-change text-orange-500 hover:text-orange-700"><i class="fa-solid fa-triangle-exclamation"></i></button>` : ''}
-                                    ${item.status !== 'atrasado' ? `<button title="Atrasado" data-id="${item.id}" data-status="atrasado" class="btn-status-change text-red-500 hover:text-red-700"><i class="fa-solid fa-clock"></i></button>` : ''}
-                                    ${item.status !== 'finalizado' ? `<button title="Finalizado" data-id="${item.id}" data-status="finalizado" class="btn-status-change text-green-600 hover:text-green-800"><i class="fa-solid fa-check-double"></i></button>` : ''}
-                                    <button title="Excluir" data-id="${item.id}" class="btn-delete-compra text-gray-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
-                                </div>
-                            </td>
-                        `;
-                    }
+                    // Added data-label attributes for mobile table transformation
+                    row.innerHTML = `
+                        <td class="align-middle break-words" data-label="Item">
+                            <p class="text-sm font-semibold text-primary">${item.servico}</p>
+                            <p class="text-xs text-secondary">${item.descricao || 'Sem descrição'}</p>
+                            <p class="text-xs text-secondary mt-1"><strong>Ambiente:</strong> ${item.ambiente || 'N/A'} | <strong>Resp:</strong> ${item.responsavel || 'N/A'}</p>
+                        </td>
+                           <td class="align-middle break-words text-sm text-secondary" data-label="Datas">
+                            <p><strong>Compra:</strong> ${formatDate(item.dataCompra)}</p>
+                            <p><strong>Entrega:</strong> ${formatDate(item.prazoEntrega)}</p>
+                            <p><strong>Previsto:</strong> ${formatDate(item.inicioPrevisto)} a ${formatDate(item.terminoPrevisto)} (${calculateDays(item.inicioPrevisto, item.terminoPrevisto)})</p>
+                        </td>
+                        <td class="align-middle break-words text-sm font-semibold text-primary" data-label="Valor">${formatCurrency(item.valor)}</td>
+                        <td class="align-middle break-words text-sm ${percentualColorClass}" data-label="% Orçam.">${percentual.toFixed(1)}%</td>
+                        <td class="align-middle" data-label="Status">
+                            <span class="status-badge ${statusInfo.color}">${statusInfo.text}</span>
+                        </td>
+                        <td class="align-middle" data-label="Ações">
+                            <div class="flex items-center space-x-2 text-lg">
+                                ${item.status !== 'em-andamento' ? `<button title="Em Andamento" data-id="${item.id}" data-status="em-andamento" class="btn-status-change text-blue-600 hover:text-blue-800"><i class="fa-solid fa-play"></i></button>` : ''}
+                                ${item.status !== 'parado' ? `<button title="Parado" data-id="${item.id}" data-status="parado" class="btn-status-change text-yellow-500 hover:text-yellow-700"><i class="fa-solid fa-pause"></i></button>` : ''}
+                                ${item.status !== 'interrompido' ? `<button title="Interrompido" data-id="${item.id}" data-status="interrompido" class="btn-status-change text-orange-500 hover:text-orange-700"><i class="fa-solid fa-triangle-exclamation"></i></button>` : ''}
+                                ${item.status !== 'atrasado' ? `<button title="Atrasado" data-id="${item.id}" data-status="atrasado" class="btn-status-change text-red-500 hover:text-red-700"><i class="fa-solid fa-clock"></i></button>` : ''}
+                                ${item.status !== 'finalizado' ? `<button title="Finalizado" data-id="${item.id}" data-status="finalizado" class="btn-status-change text-green-600 hover:text-green-800"><i class="fa-solid fa-check-double"></i></button>` : ''}
+                                <button title="Excluir" data-id="${item.id}" class="btn-delete-compra text-gray-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </td>
+                    `;
                     tbody.appendChild(row);
                 });
             }
@@ -1936,7 +1814,7 @@
             
             // This is a workaround for the two cancel buttons in the solicitation modal
             if(id === 'modal-solicitacao') {
-                   modal.querySelector('#btn-fechar-modal-solicitacao-2').addEventListener('click', () => closeModal(id));
+                modal.querySelector('#btn-fechar-modal-solicitacao-2').addEventListener('click', () => closeModal(id));
             }
 
             modal.addEventListener('click', (e) => {
@@ -1945,18 +1823,6 @@
         });
         
         // Navegação pela Sidebar
-        const sidebar = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('sidebar-overlay');
-        const hamburgerMenu = document.getElementById('hamburger-menu');
-
-        const toggleSidebar = () => {
-            sidebar.classList.toggle('open');
-            sidebarOverlay.classList.toggle('visible');
-        };
-
-        hamburgerMenu.addEventListener('click', toggleSidebar);
-        sidebarOverlay.addEventListener('click', toggleSidebar); // Close sidebar when clicking overlay
-
         const navLinks = {
             dashboard: document.getElementById('nav-dashboard'),
             compras: document.getElementById('nav-compras'),
@@ -1974,8 +1840,10 @@
             
             views[targetView].classList.remove('hidden');
             navLinks[targetView].classList.add('nav-link-active');
-            if (isMobileView()) {
-                toggleSidebar(); // Close sidebar after navigation on mobile
+            // Close sidebar on navigation for mobile
+            if (window.innerWidth < 768) {
+                document.getElementById('main-sidebar').classList.remove('open');
+                document.getElementById('sidebar-overlay').classList.remove('visible');
             }
         };
 
@@ -1985,6 +1853,19 @@
                 handleNavigation(key);
             });
         });
+
+        // Hamburger menu toggle
+        document.getElementById('hamburger-menu').addEventListener('click', () => {
+            document.getElementById('main-sidebar').classList.add('open');
+            document.getElementById('sidebar-overlay').classList.add('visible');
+        });
+
+        // Close sidebar when clicking outside
+        document.getElementById('sidebar-overlay').addEventListener('click', () => {
+            document.getElementById('main-sidebar').classList.remove('open');
+            document.getElementById('sidebar-overlay').classList.remove('visible');
+        });
+
 
         // Navegação por Abas em Cadastros
         const tabButtons = {
@@ -2014,30 +1895,30 @@
         });
 
         const updateOrcamentoInfo = () => {
-              const clienteId = document.getElementById('sol-cliente').value;
-              const valorItem = parseFloat(document.getElementById('sol-valor').value) || 0;
-              const infoBox = document.getElementById('orcamento-info');
+             const clienteId = document.getElementById('sol-cliente').value;
+             const valorItem = parseFloat(document.getElementById('sol-valor').value) || 0;
+             const infoBox = document.getElementById('orcamento-info');
 
-              if (!clienteId) { infoBox.classList.add('hidden'); return; }
-              const cliente = allClientes.find(c => c.id === clienteId);
-              if (!cliente) { infoBox.classList.add('hidden'); return; }
+             if (!clienteId) { infoBox.classList.add('hidden'); return; }
+             const cliente = allClientes.find(c => c.id === clienteId);
+             if (!cliente) { infoBox.classList.add('hidden'); return; }
 
-              const gastoAtual = allCompras.filter(c => c.clienteId === clienteId).reduce((acc, item) => acc + item.valor, 0);
-              const gastoFuturo = gastoAtual + valorItem;
-              const percentual = cliente.orcamento > 0 ? (gastoFuturo / cliente.orcamento) * 100 : 0;
-              
-              document.getElementById('info-orcamento-total').textContent = formatCurrency(cliente.orcamento);
-              document.getElementById('info-orcamento-gasto').textContent = formatCurrency(gastoFuturo);
-              document.getElementById('info-orcamento-percentual').textContent = `${percentual.toFixed(1)}%`;
-              const barra = document.getElementById('info-orcamento-barra');
-              barra.style.width = `${Math.min(percentual, 100)}%`;
+             const gastoAtual = allCompras.filter(c => c.clienteId === clienteId).reduce((acc, item) => acc + item.valor, 0);
+             const gastoFuturo = gastoAtual + valorItem;
+             const percentual = cliente.orcamento > 0 ? (gastoFuturo / cliente.orcamento) * 100 : 0;
+             
+             document.getElementById('info-orcamento-total').textContent = formatCurrency(cliente.orcamento);
+             document.getElementById('info-orcamento-gasto').textContent = formatCurrency(gastoFuturo);
+             document.getElementById('info-orcamento-percentual').textContent = `${percentual.toFixed(1)}%`;
+             const barra = document.getElementById('info-orcamento-barra');
+             barra.style.width = `${Math.min(percentual, 100)}%`;
 
-              barra.classList.remove('bg-accent-green-dark', 'bg-amber-500', 'bg-red-600');
-              if (percentual > 100) barra.classList.add('bg-red-600');
-              else if (percentual > 85) barra.classList.add('bg-amber-500');
-              else barra.classList.add('bg-accent-green-dark');
+             barra.classList.remove('bg-accent-green-dark', 'bg-amber-500', 'bg-red-600');
+             if (percentual > 100) barra.classList.add('bg-red-600');
+             else if (percentual > 85) barra.classList.add('bg-amber-500');
+             else barra.classList.add('bg-accent-green-dark');
 
-              infoBox.classList.remove('hidden');
+             infoBox.classList.remove('hidden');
         };
         document.getElementById('sol-cliente').addEventListener('change', updateOrcamentoInfo);
         document.getElementById('sol-valor').addEventListener('input', updateOrcamentoInfo);
