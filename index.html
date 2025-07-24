@@ -474,6 +474,30 @@
             background-color: #6d4534;
         }
 
+        /* --- CORREÇÃO: Botões de Ação no Modal Detalhes Cliente --- */
+        #modal-detalhes-cliente .btn-status-change,
+        #modal-detalhes-cliente .btn-delete-compra {
+            cursor: pointer;
+            position: relative; /* Garante que z-index funcione */
+            z-index: 9999; /* Valor muito alto para garantir que fiquem acima de tudo */
+            pointer-events: auto; /* Garante que os eventos de clique não sejam bloqueados */
+        }
+
+        /* --- NOVO: Estilo para o botão de adicionar categoria no modal de fornecedor --- */
+        #btn-abrir-modal-categoria-from-fornecedor {
+            display: flex; /* Garante que o conteúdo (o sinal de mais) seja centralizado */
+            align-items: center;
+            justify-content: center;
+            width: 40px; /* Largura fixa para o botão */
+            height: 40px; /* Altura fixa para o botão */
+            min-width: 40px; /* Garante que não encolha */
+            min-height: 40px; /* Garante que não encolha */
+            padding: 0; /* Remove padding padrão para controle total */
+            border-radius: 50%; /* Torna o botão redondo */
+            font-size: 1.25rem; /* Ajusta o tamanho do ícone */
+            line-height: 1; /* Garante que o texto esteja centralizado verticalmente */
+            color: var(--text-primary); /* Cor do ícone para contraste */
+        }
     </style>
 </head>
 <body class="bg-main">
@@ -656,6 +680,7 @@
                         <nav class="-mb-px flex space-x-4 md:space-x-8" aria-label="Tabs">
                             <button id="tab-btn-clientes" type="button" class="tab-btn tab-btn-active">Clientes</button>
                             <button id="tab-btn-fornecedores" type="button" class="tab-btn">Fornecedores</button>
+                            <button id="tab-btn-categorias" type="button" class="tab-btn">Categorias</button> <!-- NEW TAB BUTTON -->
                         </nav>
                     </div>
 
@@ -685,6 +710,7 @@
                                                 <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Endereço</th>
                                                 <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Orçamento</th>
                                                 <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Gasto Total</th>
+                                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Ações</th> <!-- NEW ACTIONS HEADER -->
                                             </tr>
                                         </thead>
                                         <tbody id="tabela-clientes"></tbody>
@@ -713,9 +739,36 @@
                                                 <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Nome</th>
                                                 <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Categoria</th>
                                                 <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Gasto Total</th>
+                                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Ações</th> <!-- NEW ACTIONS HEADER -->
                                             </tr>
                                         </thead>
                                         <tbody id="tabela-fornecedores"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- NEW: Categories Content -->
+                        <div id="tab-content-categorias" class="hidden">
+                             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+                                <h2 class="text-xl md:text-2xl font-semibold mb-2 sm:mb-0">Lista de Categorias</h2>
+                                <button id="btn-abrir-modal-categoria-cadastro" class="btn-primary inline-flex items-center px-4 py-2 w-full sm:w-auto justify-center">
+                                    <i class="fa-solid fa-plus mr-2"></i> Nova Categoria
+                                </button>
+                            </div>
+                            <div class="table-container content-card">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                                    <input type="text" id="filtro-categoria-nome" placeholder="Filtrar por nome...">
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full">
+                                        <thead>
+                                            <tr>
+                                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Nome</th>
+                                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tabela-categorias"></tbody>
                                     </table>
                                 </div>
                             </div>
@@ -773,8 +826,9 @@
     <!-- Modal Cliente -->
     <div id="modal-cliente" class="modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 invisible opacity-0 z-50">
         <div class="modal-content rounded-lg shadow-xl w-full max-w-sm md:max-w-md p-6 transform scale-95 content-card">
-            <h3 class="text-xl md:text-2xl font-medium mb-4">Cadastrar Novo Cliente</h3>
+            <h3 class="text-xl md:text-2xl font-medium mb-4" id="modal-cliente-title">Cadastrar Novo Cliente</h3>
             <form id="form-cliente">
+                <input type="hidden" id="cliente-id"> <!-- Hidden input for client ID -->
                 <div class="grid grid-cols-1 gap-4">
                     <input type="text" id="cliente-nome" placeholder="Nome Completo" required>
                     <input type="text" id="cliente-cpf" placeholder="CPF/CNPJ (opcional)">
@@ -794,15 +848,18 @@
     <!-- Modal Fornecedor -->
     <div id="modal-fornecedor" class="modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 invisible opacity-0 z-50">
         <div class="modal-content rounded-lg shadow-xl w-full max-w-sm p-6 transform scale-95 content-card">
-            <h3 class="text-xl md:text-2xl font-medium mb-4">Cadastrar Novo Fornecedor</h3>
+            <h3 class="text-xl md:text-2xl font-medium mb-4" id="modal-fornecedor-title">Cadastrar Novo Fornecedor</h3>
             <form id="form-fornecedor">
+                <input type="hidden" id="fornecedor-id"> <!-- Hidden input for supplier ID -->
                 <div class="grid grid-cols-1 gap-4">
                     <input type="text" id="fornecedor-nome" placeholder="Nome do Fornecedor" required>
                     <div class="flex items-center space-x-2">
                         <select id="fornecedor-categoria" required class="w-full">
                             <option value="">Selecione a categoria</option>
                         </select>
-                        <button type="button" id="btn-abrir-modal-categoria" class="flex-shrink-0 bg-accent-brown hover:bg-opacity-80 text-white font-bold py-2 px-3 rounded-full text-sm">+</button>
+                        <button type="button" id="btn-abrir-modal-categoria-from-fornecedor" class="flex-shrink-0 bg-accent-brown hover:bg-opacity-80 text-white font-bold rounded-full text-sm w-10 h-10 flex items-center justify-center p-0">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
                     </div>
                 </div>
                 <div class="mt-6 flex justify-end space-x-3">
@@ -813,11 +870,12 @@
         </div>
     </div>
 
-    <!-- Modal Categoria -->
+    <!-- Modal Categoria (Reutilizado para Criar/Editar Categoria) -->
     <div id="modal-categoria" class="modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 invisible opacity-0 z-50">
         <div class="modal-content rounded-lg shadow-xl w-full max-w-xs p-6 transform scale-95 content-card">
-            <h3 class="text-xl md:text-2xl font-medium mb-4">Nova Categoria</h3>
+            <h3 class="text-xl md:text-2xl font-medium mb-4" id="modal-categoria-title">Nova Categoria</h3>
             <form id="form-categoria">
+                <input type="hidden" id="categoria-id"> <!-- Hidden input for category ID -->
                 <input type="text" id="categoria-nome" placeholder="Nome da Categoria" required>
                 <div class="mt-6 flex justify-end space-x-3">
                     <button type="button" id="btn-fechar-modal-categoria" class="btn-secondary py-2 px-4">Cancelar</button>
@@ -972,6 +1030,20 @@
         </div>
     </div>
 
+    <!-- NEW: Confirmation Modal for Deletion -->
+    <div id="confirmation-modal" class="modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 invisible opacity-0 z-[10000]">
+        <div class="modal-content rounded-lg shadow-xl w-full max-w-sm p-6 transform scale-95 content-card bg-red-100 border-red-400 text-red-800">
+            <h3 class="text-xl md:text-2xl font-medium mb-4 text-red-900 flex items-center justify-center">
+                <i class="fa-solid fa-triangle-exclamation text-red-500 mr-2 text-3xl"></i> Confirmação Necessária
+            </h3>
+            <p class="mb-6 text-red-700 text-center" id="confirm-modal-message">Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.</p>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" id="btn-cancel-confirm" class="btn-secondary py-2 px-4">Cancelar</button>
+                <button type="button" id="btn-confirm-action" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition-colors">Confirmar Exclusão</button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Firebase -->
     <script type="module">
@@ -1007,6 +1079,9 @@
         let allCompras = [];
         let clientModalCalendarState = { month: new Date().getMonth(), year: new Date().getFullYear(), clienteId: null };
         let dashboardCalendarState = { date: new Date(), view: 'weekly' };
+
+        // Variáveis para o modal de confirmação
+        let confirmCallback = null;
 
 
         // --- UTILS ---
@@ -1061,7 +1136,7 @@
 
 
         // --- MODAL CONTROLLERS ---
-        const modals = ['modal-cliente', 'modal-fornecedor', 'modal-categoria', 'modal-detalhes-cliente', 'modal-calendario-mensal', 'modal-solicitacao'];
+        const modals = ['modal-cliente', 'modal-fornecedor', 'modal-categoria', 'modal-detalhes-cliente', 'modal-calendario-mensal', 'modal-solicitacao', 'confirmation-modal'];
         const openModal = (id) => {
             const modal = document.getElementById(id);
             modal.classList.remove('invisible', 'opacity-0');
@@ -1073,6 +1148,14 @@
             modal.querySelector('.modal-content').classList.add('scale-95');
             setTimeout(() => modal.classList.add('invisible'), 300);
         };
+
+        // Função para mostrar o modal de confirmação
+        const showConfirmationModal = (message, callback) => {
+            document.getElementById('confirm-modal-message').textContent = message;
+            confirmCallback = callback; // Armazena a callback para ser chamada na confirmação
+            openModal('confirmation-modal');
+        };
+
 
         // --- RENDER FUNCTIONS ---
 
@@ -1107,7 +1190,7 @@
                 .filter(c => {
                     if (!filtroGeral) return true;
                     const cliente = allClientes.find(cli => cli.id === c.clienteId);
-                    const searchString = `${c.servico} ${c.ambiente} ${c.responsavel} ${cliente?.nome || ''}`.toLowerCase();
+                    const searchString = `${c.servico} ${c.ambiente} ${c.responsavel} ${cliente?.nome || ''} ${c.descricao || ''} ${c.observacoes || ''}`.toLowerCase();
                     return searchString.includes(filtroGeral);
                 });
 
@@ -1155,7 +1238,7 @@
                             ${compra.status !== 'interrompido' ? `<button title="Interrompido" data-id="${compra.id}" data-status="interrompido" class="btn-status-change text-orange-500 hover:text-orange-700"><i class="fa-solid fa-triangle-exclamation"></i></button>` : ''}
                             ${compra.status !== 'atrasado' ? `<button title="Atrasado" data-id="${compra.id}" data-status="atrasado" class="btn-status-change text-red-500 hover:text-red-700"><i class="fa-solid fa-clock"></i></button>` : ''}
                             ${compra.status !== 'finalizado' ? `<button title="Finalizado" data-id="${compra.id}" data-status="finalizado" class="btn-status-change text-green-600 hover:text-green-800"><i class="fa-solid fa-check-double"></i></button>` : ''}
-                            <button title="Excluir" data-id="${compra.id}" class="btn-delete-compra text-gray-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                            <button title="Excluir" data-id="${compra.id}" data-collection="compras" class="btn-delete-item text-gray-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </td>
                 `;
@@ -1183,7 +1266,7 @@
             });
 
             if (filteredClientes.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-secondary">Nenhum cliente encontrado.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-secondary">Nenhum cliente encontrado.</td></tr>`;
                 return;
             }
 
@@ -1200,6 +1283,12 @@
                     <td class="whitespace-nowrap text-sm text-secondary">${cliente.endereco}, ${cliente.cidade}</td>
                     <td class="whitespace-nowrap text-sm text-secondary">${formatCurrency(cliente.orcamento)}</td>
                     <td class="whitespace-nowrap text-sm ${gastoColorClass}">${formatCurrency(gastoTotal)}</td>
+                    <td class="whitespace-nowrap text-right text-sm font-medium">
+                        <div class="flex items-center space-x-3 text-lg">
+                            <button title="Editar Cliente" data-id="${cliente.id}" class="btn-edit-cliente text-blue-600 hover:text-blue-800"><i class="fa-solid fa-edit"></i></button>
+                            <button title="Excluir Cliente" data-id="${cliente.id}" data-collection="clientes" class="btn-delete-item text-gray-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </td>
                 `;
                 tbody.appendChild(row);
             });
@@ -1224,7 +1313,7 @@
             });
 
             if (filteredFornecedores.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="text-center py-8 text-secondary">Nenhum fornecedor encontrado.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-secondary">Nenhum fornecedor encontrado.</td></tr>`;
                 return;
             }
 
@@ -1234,10 +1323,48 @@
                     <td class="whitespace-nowrap text-sm font-medium text-primary">${fornecedor.nome}</td>
                     <td class="whitespace-nowrap text-sm text-secondary">${fornecedor.categoriaNome}</td>
                     <td class="whitespace-nowrap text-sm font-semibold text-primary">${formatCurrency(fornecedor.gastoTotal)}</td>
+                    <td class="whitespace-nowrap text-right text-sm font-medium">
+                        <div class="flex items-center space-x-3 text-lg">
+                            <button title="Editar Fornecedor" data-id="${fornecedor.id}" class="btn-edit-fornecedor text-blue-600 hover:text-blue-800"><i class="fa-solid fa-edit"></i></button>
+                            <button title="Excluir Fornecedor" data-id="${fornecedor.id}" data-collection="fornecedores" class="btn-delete-item text-gray-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </td>
                 `;
                 tbody.appendChild(row);
             });
         };
+
+        const renderTabelaCategorias = () => {
+            const tbody = document.getElementById('tabela-categorias');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            const filtroNome = document.getElementById('filtro-categoria-nome').value.toLowerCase();
+            
+            const filteredCategorias = allCategorias.filter(c => {
+                return (!filtroNome || c.nome.toLowerCase().includes(filtroNome));
+            });
+
+            if (filteredCategorias.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="2" class="text-center py-8 text-secondary">Nenhuma categoria encontrada.</td></tr>`;
+                return;
+            }
+
+            filteredCategorias.forEach(categoria => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="whitespace-nowrap text-sm font-medium text-primary">${categoria.nome}</td>
+                    <td class="whitespace-nowrap text-right text-sm font-medium">
+                        <div class="flex items-center space-x-3 text-lg">
+                            <button title="Editar Categoria" data-id="${categoria.id}" class="btn-edit-categoria text-blue-600 hover:text-blue-800"><i class="fa-solid fa-edit"></i></button>
+                            <button title="Excluir Categoria" data-id="${categoria.id}" data-collection="categorias" class="btn-delete-item text-gray-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        };
+
 
         const renderControleClientes = () => {
             const container = document.getElementById('lista-controle-clientes');
@@ -1288,10 +1415,10 @@
                 if (totalItens > 0) {
                     const finalizados = comprasCliente.filter(c => c.status === 'finalizado').length;
                     if (finalizados === totalItens) {
-                        andamento = 'Concluído';
+                        andamento = 'concluido';
                         andamentoColor = 'bg-[var(--status-finalizado-bg)] text-[var(--status-finalizado-text)]';
                     } else if (comprasCliente.some(c => c.status !== 'nao-iniciado')) {
-                        andamento = 'Em Andamento';
+                        andamento = 'em-andamento';
                         andamentoColor = 'bg-[var(--status-em-andamento-bg)] text-[var(--status-em-andamento-text)]';
                     }
                 }
@@ -1381,7 +1508,7 @@
                                 ${item.status !== 'interrompido' ? `<button title="Interrompido" data-id="${item.id}" data-status="interrompido" class="btn-status-change text-orange-500 hover:text-orange-700"><i class="fa-solid fa-triangle-exclamation"></i></button>` : ''}
                                 ${item.status !== 'atrasado' ? `<button title="Atrasado" data-id="${item.id}" data-status="atrasado" class="btn-status-change text-red-500 hover:text-red-700"><i class="fa-solid fa-clock"></i></button>` : ''}
                                 ${item.status !== 'finalizado' ? `<button title="Finalizado" data-id="${item.id}" data-status="finalizado" class="btn-status-change text-green-600 hover:text-green-800"><i class="fa-solid fa-check-double"></i></button>` : ''}
-                                <button title="Excluir" data-id="${item.id}" class="btn-delete-compra text-gray-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                                <button title="Excluir" data-id="${item.id}" data-collection="compras" class="btn-delete-item text-gray-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
                             </div>
                         </td>
                     `;
@@ -1414,7 +1541,7 @@
                                     ${item.status !== 'interrompido' ? `<button title="Interrompido" data-id="${item.id}" data-status="interrompido" class="btn-status-change text-orange-500 hover:text-orange-700 p-1 rounded-full"><i class="fa-solid fa-triangle-exclamation"></i></button>` : ''}
                                     ${item.status !== 'atrasado' ? `<button title="Atrasado" data-id="${item.id}" data-status="atrasado" class="btn-status-change text-red-500 hover:text-red-700 p-1 rounded-full"><i class="fa-solid fa-clock"></i></button>` : ''}
                                     ${item.status !== 'finalizado' ? `<button title="Finalizado" data-id="${item.id}" data-status="finalizado" class="btn-status-change text-green-600 hover:text-green-800 p-1 rounded-full"><i class="fa-solid fa-check-double"></i></button>` : ''}
-                                    <button title="Excluir" data-id="${item.id}" class="btn-delete-compra text-gray-500 hover:text-red-600 p-1 rounded-full"><i class="fa-solid fa-trash"></i></button>
+                                    <button title="Excluir" data-id="${item.id}" data-collection="compras" class="btn-delete-item text-gray-500 hover:text-red-600 p-1 rounded-full"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                             </div>
                         </td>
@@ -1605,6 +1732,7 @@
 
                 const currentDate = new Date(year, month, i);
                 const tasksForDay = tasksForMonth.filter(task => {
+                    if (!task.inicioPrevisto || !task.terminoPrevisto) return false;
                     const inicio = new Date(task.inicioPrevisto + 'T00:00:00');
                     const termino = new Date(task.terminoPrevisto + 'T00:00:00');
                     return currentDate >= inicio && currentDate <= termino;
@@ -1713,7 +1841,7 @@
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
             for (let i = 0; i < firstDay; i++) {
-                container.innerHTML += `<div class="bg-gray-50 rounded"></div>`;
+                calBody.innerHTML += `<div class="bg-gray-50 rounded"></div>`;
             }
 
             for (let i = 1; i <= daysInMonth; i++) {
@@ -1721,7 +1849,7 @@
                 dayCell.className = 'border border-border-color rounded p-1 min-h-[100px] flex flex-col';
                 
                 const dayNumber = document.createElement('span');
-                const isToday = new Date(year, month, i).toDateString() === todayDate.toDateString(); // Corrected isToday check
+                const isToday = new Date(year, month, i).toDateString() === todayDate.toDateString();
                 dayNumber.className = `text-xs ${isToday ? 'text-primary' : 'text-secondary'}`; 
                 dayNumber.textContent = i;
                 dayCell.appendChild(dayNumber);
@@ -1752,7 +1880,7 @@
                 });
 
                 dayCell.appendChild(tasksContainer);
-                container.appendChild(dayCell);
+                calBody.appendChild(dayCell);
             }
         };
 
@@ -1761,46 +1889,66 @@
 
         document.getElementById('form-cliente').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const osNumber = `OS-${Date.now().toString().slice(-6)}`;
+            const clienteId = document.getElementById('cliente-id').value;
+            const clienteData = {
+                nome: document.getElementById('cliente-nome').value,
+                cpf: document.getElementById('cliente-cpf').value,
+                condominio: document.getElementById('cliente-condominio').value,
+                endereco: document.getElementById('cliente-endereco').value,
+                cidade: document.getElementById('cliente-cidade').value,
+                orcamento: parseFloat(document.getElementById('cliente-orcamento').value) || 0,
+            };
+
             try {
-                await addDoc(clientesCol, {
-                    os: osNumber,
-                    nome: document.getElementById('cliente-nome').value,
-                    cpf: document.getElementById('cliente-cpf').value,
-                    condominio: document.getElementById('cliente-condominio').value,
-                    endereco: document.getElementById('cliente-endereco').value,
-                    cidade: document.getElementById('cliente-cidade').value,
-                    orcamento: parseFloat(document.getElementById('cliente-orcamento').value) || 0,
-                    createdAt: new Date()
-                });
+                if (clienteId) {
+                    await setDoc(doc(db, 'clientes', clienteId), clienteData, { merge: true });
+                } else {
+                    clienteData.os = `OS-${Date.now().toString().slice(-6)}`;
+                    clienteData.createdAt = new Date();
+                    await addDoc(clientesCol, clienteData);
+                }
                 e.target.reset();
                 closeModal('modal-cliente');
-            } catch (error) { console.error("Erro ao cadastrar cliente: ", error); }
+            } catch (error) { console.error("Erro ao salvar cliente: ", error); }
         });
 
         document.getElementById('form-fornecedor').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const fornecedorId = document.getElementById('fornecedor-id').value;
+            const fornecedorData = {
+                nome: document.getElementById('fornecedor-nome').value,
+                categoriaId: document.getElementById('fornecedor-categoria').value,
+            };
+
             try {
-                await addDoc(fornecedoresCol, {
-                    nome: document.getElementById('fornecedor-nome').value,
-                    categoriaId: document.getElementById('fornecedor-categoria').value,
-                    createdAt: new Date()
-                });
+                if (fornecedorId) {
+                    await setDoc(doc(db, 'fornecedores', fornecedorId), fornecedorData, { merge: true });
+                } else {
+                    fornecedorData.createdAt = new Date();
+                    await addDoc(fornecedoresCol, fornecedorData);
+                }
                 e.target.reset();
                 closeModal('modal-fornecedor');
-            } catch (error) { console.error("Erro ao cadastrar fornecedor: ", error); }
+            } catch (error) { console.error("Erro ao salvar fornecedor: ", error); }
         });
 
         document.getElementById('form-categoria').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const categoriaId = document.getElementById('categoria-id').value;
+            const categoriaData = {
+                nome: document.getElementById('categoria-nome').value,
+            };
+
             try {
-                await addDoc(categoriasCol, {
-                    nome: document.getElementById('categoria-nome').value,
-                    createdAt: new Date()
-                });
+                if (categoriaId) {
+                    await setDoc(doc(db, 'categorias', categoriaId), categoriaData, { merge: true });
+                } else {
+                    categoriaData.createdAt = new Date();
+                    await addDoc(categoriasCol, categoriaData);
+                }
                 e.target.reset();
                 closeModal('modal-categoria');
-            } catch (error) { console.error("Erro ao cadastrar categoria: ", error); }
+            } catch (error) { console.error("Erro ao salvar categoria: ", error); }
         });
 
         document.getElementById('form-solicitacao').addEventListener('submit', async (e) => {
@@ -1836,18 +1984,101 @@
                 try { await setDoc(doc(db, 'compras', id), { status: status }, { merge: true }); } 
                 catch (error) { console.error("Erro ao atualizar status: ", error); }
             }
-            const deleteButton = e.target.closest('.btn-delete-compra');
+
+            const deleteButton = e.target.closest('.btn-delete-item');
             if (deleteButton) {
                 const id = deleteButton.dataset.id;
-                try { await deleteDoc(doc(db, 'compras', id)); }
-                catch (error) { console.error("Erro ao excluir item: ", error); }
+                const collectionName = deleteButton.dataset.collection;
+                
+                showConfirmationModal('Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.', async () => {
+                    try {
+                        let collectionRef;
+                        if (collectionName === 'clientes') collectionRef = clientesCol;
+                        else if (collectionName === 'fornecedores') collectionRef = fornecedoresCol;
+                        else if (collectionName === 'categorias') collectionRef = categoriasCol;
+                        else if (collectionName === 'compras') collectionRef = comprasCol;
+
+                        if (collectionRef) {
+                            await deleteDoc(doc(db, collectionName, id));
+                            closeModal('confirmation-modal');
+                        } else {
+                            console.error("Coleção não reconhecida para exclusão:", collectionName);
+                        }
+                    } catch (error) {
+                        console.error("Erro ao excluir item: ", error);
+                    }
+                });
+            }
+
+            const editClientButton = e.target.closest('.btn-edit-cliente');
+            if (editClientButton) {
+                const clientId = editClientButton.dataset.id;
+                const clientToEdit = allClientes.find(c => c.id === clientId);
+                if (clientToEdit) {
+                    document.getElementById('cliente-id').value = clientToEdit.id;
+                    document.getElementById('cliente-nome').value = clientToEdit.nome;
+                    document.getElementById('cliente-cpf').value = clientToEdit.cpf || '';
+                    document.getElementById('cliente-condominio').value = clientToEdit.condominio || '';
+                    document.getElementById('cliente-endereco').value = clientToEdit.endereco;
+                    document.getElementById('cliente-cidade').value = clientToEdit.cidade;
+                    document.getElementById('cliente-orcamento').value = clientToEdit.orcamento;
+                    document.getElementById('modal-cliente-title').textContent = 'Editar Cliente';
+                    openModal('modal-cliente');
+                }
+            }
+
+            const editFornecedorButton = e.target.closest('.btn-edit-fornecedor');
+            if (editFornecedorButton) {
+                const fornecedorId = editFornecedorButton.dataset.id;
+                const fornecedorToEdit = allFornecedores.find(f => f.id === fornecedorId);
+                if (fornecedorToEdit) {
+                    document.getElementById('fornecedor-id').value = fornecedorToEdit.id;
+                    document.getElementById('fornecedor-nome').value = fornecedorToEdit.nome;
+                    document.getElementById('fornecedor-categoria').value = fornecedorToEdit.categoriaId;
+                    document.getElementById('modal-fornecedor-title').textContent = 'Editar Fornecedor';
+                    openModal('modal-fornecedor');
+                }
+            }
+
+            const editCategoriaButton = e.target.closest('.btn-edit-categoria');
+            if (editCategoriaButton) {
+                const categoriaId = editCategoriaButton.dataset.id;
+                const categoriaToEdit = allCategorias.find(c => c.id === categoriaId);
+                if (categoriaToEdit) {
+                    document.getElementById('categoria-id').value = categoriaToEdit.id;
+                    document.getElementById('categoria-nome').value = categoriaToEdit.nome;
+                    document.getElementById('modal-categoria-title').textContent = 'Editar Categoria';
+                    openModal('modal-categoria');
+                }
             }
         });
 
         // --- EVENT LISTENERS (MODALS, NAV, TABS) ---
-        document.getElementById('btn-abrir-modal-cliente').addEventListener('click', () => openModal('modal-cliente'));
-        document.getElementById('btn-abrir-modal-fornecedor').addEventListener('click', () => openModal('modal-fornecedor'));
-        document.getElementById('btn-abrir-modal-categoria').addEventListener('click', () => openModal('modal-categoria'));
+        document.getElementById('btn-abrir-modal-cliente').addEventListener('click', () => {
+            document.getElementById('cliente-id').value = ''; // Clear ID for new client
+            document.getElementById('form-cliente').reset();
+            document.getElementById('modal-cliente-title').textContent = 'Cadastrar Novo Cliente';
+            openModal('modal-cliente');
+        });
+        document.getElementById('btn-abrir-modal-fornecedor').addEventListener('click', () => {
+            document.getElementById('fornecedor-id').value = ''; // Clear ID for new supplier
+            document.getElementById('form-fornecedor').reset();
+            document.getElementById('modal-fornecedor-title').textContent = 'Cadastrar Novo Fornecedor';
+            openModal('modal-fornecedor');
+        });
+        document.getElementById('btn-abrir-modal-categoria-cadastro').addEventListener('click', () => { // New button for category tab
+            document.getElementById('categoria-id').value = ''; // Clear ID for new category
+            document.getElementById('form-categoria').reset();
+            document.getElementById('modal-categoria-title').textContent = 'Nova Categoria';
+            openModal('modal-categoria');
+        });
+        document.getElementById('btn-abrir-modal-categoria-from-fornecedor').addEventListener('click', () => { // Existing button from supplier modal
+            document.getElementById('categoria-id').value = ''; // Clear ID for new category
+            document.getElementById('form-categoria').reset();
+            document.getElementById('modal-categoria-title').textContent = 'Nova Categoria';
+            openModal('modal-categoria');
+        });
+
         document.getElementById('btn-abrir-modal-solicitacao').addEventListener('click', () => openModal('modal-solicitacao'));
         document.getElementById('btn-abrir-calendario-mensal').addEventListener('click', () => {
             const clienteId = clientModalCalendarState.clienteId;
@@ -1866,6 +2097,18 @@
             modal.addEventListener('click', (e) => {
                 if (e.target.id === id) closeModal(id);
             });
+        });
+
+        // Confirmation modal buttons
+        document.getElementById('btn-confirm-action').addEventListener('click', () => {
+            if (confirmCallback) {
+                confirmCallback();
+                confirmCallback = null; // Reset callback
+            }
+        });
+        document.getElementById('btn-cancel-confirm').addEventListener('click', () => {
+            closeModal('confirmation-modal');
+            confirmCallback = null; // Reset callback
         });
         
         // Navegação pela Sidebar
@@ -1915,10 +2158,12 @@
         const tabButtons = {
             clientes: document.getElementById('tab-btn-clientes'),
             fornecedores: document.getElementById('tab-btn-fornecedores'),
+            categorias: document.getElementById('tab-btn-categorias'), // NEW
         };
         const tabContents = {
             clientes: document.getElementById('tab-content-clientes'),
             fornecedores: document.getElementById('tab-content-fornecedores'),
+            categorias: document.getElementById('tab-content-categorias'), // NEW
         };
 
         const handleTabSwitch = (targetTab) => {
@@ -1927,11 +2172,16 @@
 
             tabContents[targetTab].classList.remove('hidden');
             tabButtons[targetTab].classList.add('tab-btn-active');
+            
+            // Re-render tables when switching tabs to apply filters/updates
+            if (targetTab === 'clientes') renderTabelaClientes();
+            if (targetTab === 'fornecedores') renderTabelaFornecedores();
+            if (targetTab === 'categorias') renderTabelaCategorias();
         };
 
         tabButtons.clientes.addEventListener('click', () => handleTabSwitch('clientes'));
         tabButtons.fornecedores.addEventListener('click', () => handleTabSwitch('fornecedores'));
-
+        tabButtons.categorias.addEventListener('click', () => handleTabSwitch('categorias')); // NEW
 
         document.addEventListener('click', (e) => {
             const btn = e.target.closest('.btn-ver-mais');
@@ -1981,6 +2231,7 @@
             const event = el.tagName === 'SELECT' ? 'change' : 'input';
             el.addEventListener(event, renderTabelaFornecedores);
         });
+        document.getElementById('filtro-categoria-nome').addEventListener('input', renderTabelaCategorias); // NEW CATEGORY FILTER
         ['filtro-resumo-cliente', 'filtro-resumo-condominio', 'filtro-resumo-cidade'].forEach(id => {
             document.getElementById(id).addEventListener('input', renderControleClientes);
         });
@@ -2164,7 +2415,7 @@
             chatbotInput.value = '';
             const loadingIndicator = addLoadingIndicator();
 
-            const xingamentos = ['porra', 'caralho', 'merda', 'puta', 'demonio', 'inferno', 'bosta', 'desgraça'];
+            const xingamentos = ['porra', 'caralho', 'merda', 'puta', 'demonio', 'inferno', 'bosta', 'desgraça', 'animal', 'burro', 'idiota', 'imbecil', 'incopetente', 'babaca', 'otario', 'infeliz', 'desgraçado', 'babaca'];
             const isXingo = xingamentos.some(word => userInput.toLowerCase().includes(word));
             const botIcon = isXingo ? 'sad.png' : 'hello.png';
 
@@ -2215,7 +2466,7 @@
                 renderViewResponsavel(nomeResponsavel);
             }
 
-            handleTabSwitch('clientes');
+            handleTabSwitch('clientes'); // Default to clients tab on load
             renderDashboardCalendar();
 
             onSnapshot(clientesCol, (snapshot) => {
@@ -2238,7 +2489,7 @@
                 allCategorias = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 populateSelect('fornecedor-categoria', allCategorias, 'id', 'nome', 'Selecione a categoria');
                 populateSelect('filtro-fornecedor-categoria', allCategorias, 'id', 'nome', 'Todas Categorias');
-                renderTabelaFornecedores(); 
+                renderTabelaCategorias(); // NEW: Render categories table on update
             });
 
             onSnapshot(comprasCol, (snapshot) => {
@@ -2251,6 +2502,12 @@
                 renderControleClientes();
                 renderDashboardCalendar();
                 if (nomeResponsavel) renderViewResponsavel(nomeResponsavel);
+
+                // Re-render client details modal if it's open
+                const modalDetalhesCliente = document.getElementById('modal-detalhes-cliente');
+                if (!modalDetalhesCliente.classList.contains('invisible') && clientModalCalendarState.clienteId) {
+                    openDetalhesClienteModal(clientModalCalendarState.clienteId);
+                }
             });
         };
 
