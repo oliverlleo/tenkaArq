@@ -497,6 +497,13 @@
             font-size: 1.25rem; /* Ajusta o tamanho do ícone */
             line-height: 1; /* Garante que o texto esteja centralizado verticalmente */
             color: var(--text-primary); /* Cor do ícone para contraste */
+            background-color: var(--border-color); /* Fundo para o botão */
+            border: 1px solid var(--text-secondary); /* Borda para o botão */
+        }
+        #btn-abrir-modal-categoria-from-fornecedor:hover {
+            background-color: var(--accent-green-light); /* Efeito hover */
+            color: white;
+            border-color: var(--accent-green-dark);
         }
     </style>
 </head>
@@ -604,7 +611,7 @@
                                 <option value="">Todos os Status</option>
                                 <option value="nao-iniciado">Não Iniciado</option>
                                 <option value="em-andamento">Em Andamento</option>
-                                <option value="concluido">Concluído</option>
+                                <option value="concluido">Concluídoclient</option>
                             </select>
                             <input type="text" id="filtro-resumo-condominio" placeholder="Filtrar por condomínio...">
                             <input type="text" id="filtro-resumo-cidade" placeholder="Filtrar por cidade...">
@@ -622,9 +629,14 @@
                             <h1 class="text-3xl md:text-4xl font-bold">Solicitação e Histórico</h1>
                             <p class="text-secondary text-sm md:text-base">Adicione e gerencie todas as compras e serviços.</p>
                         </div>
-                        <button id="btn-abrir-modal-solicitacao" class="btn-primary inline-flex items-center px-4 py-2 w-full md:w-auto justify-center">
-                            <i class="fa-solid fa-plus mr-2"></i> Nova Solicitação
-                        </button>
+                        <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-3 w-full md:w-auto">
+                            <button id="btn-abrir-modal-solicitacao" class="btn-primary inline-flex items-center px-4 py-2 w-full md:w-auto justify-center">
+                                <i class="fa-solid fa-plus mr-2"></i> Nova Solicitação
+                            </button>
+                            <button id="btn-abrir-modal-editar-solicitacao" class="btn-secondary inline-flex items-center px-4 py-2 w-full md:w-auto justify-center" disabled>
+                                <i class="fa-solid fa-edit mr-2"></i> Editar Solicitação
+                            </button>
+                        </div>
                     </header>
                     
                     <!-- Tabela de Compras -->
@@ -652,6 +664,7 @@
                             <table class="min-w-full">
                                 <thead>
                                     <tr>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider w-10"></th> <!-- Checkbox Header -->
                                         <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Nº</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Cliente</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Serviço/Produto</th>
@@ -889,10 +902,11 @@
     <div id="modal-solicitacao" class="modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 invisible opacity-0 z-50">
         <div class="modal-content rounded-lg shadow-xl w-full max-w-full md:max-w-5xl p-6 transform scale-95 content-card">
              <div class="flex justify-between items-center mb-4">
-                 <h3 class="text-xl md:text-2xl font-medium">Nova Solicitação de Compra</h3>
+                 <h3 class="text-xl md:text-2xl font-medium" id="modal-solicitacao-title">Nova Solicitação de Compra</h3>
                  <button type="button" id="btn-fechar-modal-solicitacao" class="text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
              </div>
              <form id="form-solicitacao">
+                 <input type="hidden" id="sol-id"> <!-- Hidden input for item ID -->
                  <div class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 mb-4">
                      <div><label for="sol-cliente" class="block text-sm font-medium">Cliente*</label><select id="sol-cliente" required class="mt-1 block w-full"></select></div>
                      <div><label for="sol-fornecedor" class="block text-sm font-medium">Fornecedor*</label><select id="sol-fornecedor" required class="mt-1 block w-full"></select></div>
@@ -1083,6 +1097,9 @@
         // Variáveis para o modal de confirmação
         let confirmCallback = null;
 
+        // Variável para armazenar o ID da compra selecionada para edição
+        let selectedCompraId = null;
+
 
         // --- UTILS ---
         const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
@@ -1195,8 +1212,15 @@
                 });
 
             if (filteredCompras.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-secondary">Nenhuma solicitação encontrada.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" class="text-center py-8 text-secondary">Nenhuma solicitação encontrada.</td></tr>`;
+                document.getElementById('btn-abrir-modal-editar-solicitacao').disabled = true;
                 return;
+            }
+
+            // Reset selected item and disable edit button if no longer in filtered list
+            if (selectedCompraId && !filteredCompras.some(c => c.id === selectedCompraId)) {
+                selectedCompraId = null;
+                document.getElementById('btn-abrir-modal-editar-solicitacao').disabled = true;
             }
 
             filteredCompras.forEach((compra, index) => {
@@ -1217,6 +1241,9 @@
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
+                    <td class="whitespace-nowrap text-sm font-medium text-primary">
+                        <input type="checkbox" data-id="${compra.id}" class="compra-checkbox form-checkbox h-4 w-4 text-green-600 rounded focus:ring-green-500 ${selectedCompraId === compra.id ? 'checked:bg-green-500 checked:border-transparent checked:ring-green-500' : ''}">
+                    </td>
                     <td class="whitespace-nowrap text-sm font-medium text-primary">${index + 1}</td>
                     <td class="whitespace-nowrap text-sm text-secondary">${cliente?.nome || 'N/A'}</td>
                     <td class="whitespace-nowrap text-sm font-medium text-primary">${compra.servico}</td>
@@ -1243,6 +1270,26 @@
                     </td>
                 `;
                 tbody.appendChild(row);
+            });
+
+            // Add event listeners to new checkboxes
+            document.querySelectorAll('.compra-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    // Uncheck all other checkboxes
+                    document.querySelectorAll('.compra-checkbox').forEach(cb => {
+                        if (cb !== e.target) {
+                            cb.checked = false;
+                        }
+                    });
+
+                    if (e.target.checked) {
+                        selectedCompraId = e.target.dataset.id;
+                        document.getElementById('btn-abrir-modal-editar-solicitacao').disabled = false;
+                    } else {
+                        selectedCompraId = null;
+                        document.getElementById('btn-abrir-modal-editar-solicitacao').disabled = true;
+                    }
+                });
             });
         };
 
@@ -1782,7 +1829,7 @@
             const dayOfWeek = current.getDay();
             const startOfWeek = new Date(current);
             startOfWeek.setDate(current.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-
+            
             document.getElementById('dashboard-cal-month-year').textContent = `Semana de ${startOfWeek.toLocaleDateString('pt-BR')}`;
             const todayDate = new Date();
 
@@ -1828,7 +1875,7 @@
         };
 
         const renderDashboardMonthly = () => {
-            const container = document.getElementById('dashboard-cal-mensal-grid');
+            const container = document.getElementById('dashboard-cal-mensal-grid'); // Corrected reference
             container.innerHTML = '';
             const current = dashboardCalendarState.date;
             const month = current.getMonth();
@@ -1841,7 +1888,7 @@
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
             for (let i = 0; i < firstDay; i++) {
-                calBody.innerHTML += `<div class="bg-gray-50 rounded"></div>`;
+                container.innerHTML += `<div class="bg-gray-50 rounded"></div>`;
             }
 
             for (let i = 1; i <= daysInMonth; i++) {
@@ -1880,7 +1927,7 @@
                 });
 
                 dayCell.appendChild(tasksContainer);
-                calBody.appendChild(dayCell);
+                container.appendChild(dayCell);
             }
         };
 
@@ -1953,27 +2000,37 @@
 
         document.getElementById('form-solicitacao').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const solId = document.getElementById('sol-id').value;
+            const solicitacaoData = {
+                clienteId: document.getElementById('sol-cliente').value,
+                servico: document.getElementById('sol-servico').value,
+                valor: parseFloat(document.getElementById('sol-valor').value) || 0,
+                fornecedorId: document.getElementById('sol-fornecedor').value,
+                ambiente: document.getElementById('sol-ambiente').value,
+                responsavel: document.getElementById('sol-responsavel').value,
+                dataCompra: document.getElementById('sol-data-compra').value,
+                prazoEntrega: document.getElementById('sol-prazo-entrega').value,
+                inicioPrevisto: document.getElementById('sol-inicio-previsto').value,
+                terminoPrevisto: document.getElementById('sol-termino-previsto').value,
+                descricao: document.getElementById('sol-descricao').value,
+                observacoes: document.getElementById('sol-observacoes').value,
+            };
+
             try {
-                await addDoc(comprasCol, {
-                    clienteId: document.getElementById('sol-cliente').value,
-                    servico: document.getElementById('sol-servico').value,
-                    valor: parseFloat(document.getElementById('sol-valor').value) || 0,
-                    fornecedorId: document.getElementById('sol-fornecedor').value,
-                    ambiente: document.getElementById('sol-ambiente').value,
-                    responsavel: document.getElementById('sol-responsavel').value,
-                    dataCompra: document.getElementById('sol-data-compra').value,
-                    prazoEntrega: document.getElementById('sol-prazo-entrega').value,
-                    inicioPrevisto: document.getElementById('sol-inicio-previsto').value,
-                    terminoPrevisto: document.getElementById('sol-termino-previsto').value,
-                    descricao: document.getElementById('sol-descricao').value,
-                    observacoes: document.getElementById('sol-observacoes').value,
-                    status: 'nao-iniciado',
-                    createdAt: new Date()
-                });
+                if (solId) {
+                    // Editing existing item
+                    await setDoc(doc(db, 'compras', solId), solicitacaoData, { merge: true });
+                } else {
+                    // Adding new item
+                    solicitacaoData.status = 'nao-iniciado';
+                    solicitacaoData.createdAt = new Date();
+                    await addDoc(comprasCol, solicitacaoData);
+                }
                 e.target.reset();
                 document.getElementById('orcamento-info').classList.add('hidden');
                 closeModal('modal-solicitacao');
-            } catch (error) { console.error("Erro ao cadastrar compra: ", error); }
+                selectedCompraId = null; // Clear selection after submit
+            } catch (error) { console.error("Erro ao salvar solicitação: ", error); }
         });
         
         document.addEventListener('click', async (e) => {
@@ -2079,7 +2136,39 @@
             openModal('modal-categoria');
         });
 
-        document.getElementById('btn-abrir-modal-solicitacao').addEventListener('click', () => openModal('modal-solicitacao'));
+        document.getElementById('btn-abrir-modal-solicitacao').addEventListener('click', () => {
+            document.getElementById('sol-id').value = ''; // Clear ID for new solicitation
+            document.getElementById('form-solicitacao').reset();
+            document.getElementById('modal-solicitacao-title').textContent = 'Nova Solicitação de Compra';
+            document.getElementById('orcamento-info').classList.add('hidden'); // Hide budget info for new form
+            openModal('modal-solicitacao');
+        });
+
+        document.getElementById('btn-abrir-modal-editar-solicitacao').addEventListener('click', () => {
+            if (selectedCompraId) {
+                const compraToEdit = allCompras.find(c => c.id === selectedCompraId);
+                if (compraToEdit) {
+                    document.getElementById('sol-id').value = compraToEdit.id;
+                    document.getElementById('sol-cliente').value = compraToEdit.clienteId;
+                    document.getElementById('sol-fornecedor').value = compraToEdit.fornecedorId;
+                    document.getElementById('sol-servico').value = compraToEdit.servico;
+                    document.getElementById('sol-valor').value = compraToEdit.valor;
+                    document.getElementById('sol-ambiente').value = compraToEdit.ambiente || '';
+                    document.getElementById('sol-responsavel').value = compraToEdit.responsavel || '';
+                    document.getElementById('sol-data-compra').value = compraToEdit.dataCompra;
+                    document.getElementById('sol-prazo-entrega').value = compraToEdit.prazoEntrega || '';
+                    document.getElementById('sol-inicio-previsto').value = compraToEdit.inicioPrevisto || '';
+                    document.getElementById('sol-termino-previsto').value = compraToEdit.terminoPrevisto || '';
+                    document.getElementById('sol-descricao').value = compraToEdit.descricao || '';
+                    document.getElementById('sol-observacoes').value = compraToEdit.observacoes || '';
+                    document.getElementById('modal-solicitacao-title').textContent = 'Editar Solicitação de Compra';
+                    updateOrcamentoInfo(); // Update budget info for edit form
+                    openModal('modal-solicitacao');
+                }
+            }
+        });
+
+
         document.getElementById('btn-abrir-calendario-mensal').addEventListener('click', () => {
             const clienteId = clientModalCalendarState.clienteId;
             if(clienteId) openCalendarioMensal(clienteId);
