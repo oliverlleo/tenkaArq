@@ -2010,19 +2010,23 @@
         document.getElementById('form-solicitacao').addEventListener('submit', async (e) => {
             e.preventDefault();
             const solId = document.getElementById('sol-id').value;
+            const clienteId = document.getElementById('sol-cliente').value;
+            const servico = document.getElementById('sol-servico').value;
+            const valor = parseFloat(document.getElementById('sol-valor').value) || 0;
+            const fornecedorId = document.getElementById('sol-fornecedor').value;
+            const ambiente = document.getElementById('sol-ambiente').value;
+            const responsavel = document.getElementById('sol-responsavel').value;
+            const dataCompra = document.getElementById('sol-data-compra').value;
+            const prazoEntrega = document.getElementById('sol-prazo-entrega').value;
+            const inicioPrevisto = document.getElementById('sol-inicio-previsto').value;
+            const terminoPrevisto = document.getElementById('sol-termino-previsto').value;
+            const descricao = document.getElementById('sol-descricao').value;
+            const observacoes = document.getElementById('sol-observacoes').value;
+
             const solicitacaoData = {
-                clienteId: document.getElementById('sol-cliente').value,
-                servico: document.getElementById('sol-servico').value,
-                valor: parseFloat(document.getElementById('sol-valor').value) || 0,
-                fornecedorId: document.getElementById('sol-fornecedor').value,
-                ambiente: document.getElementById('sol-ambiente').value,
-                responsavel: document.getElementById('sol-responsavel').value,
-                dataCompra: document.getElementById('sol-data-compra').value,
-                prazoEntrega: document.getElementById('sol-prazo-entrega').value,
-                inicioPrevisto: document.getElementById('sol-inicio-previsto').value,
-                terminoPrevisto: document.getElementById('sol-termino-previsto').value,
-                descricao: document.getElementById('sol-descricao').value,
-                observacoes: document.getElementById('sol-observacoes').value,
+                clienteId, servico, valor, fornecedorId, ambiente, responsavel,
+                dataCompra, prazoEntrega, inicioPrevisto, terminoPrevisto,
+                descricao, observacoes
             };
 
             try {
@@ -2039,6 +2043,10 @@
                 document.getElementById('orcamento-info').classList.add('hidden');
                 closeModal('modal-solicitacao');
                 selectedCompraId = null; // Clear selection after submit
+
+                // Tenta criar o evento no Google Calendar
+                await createGoogleCalendarEvent(solicitacaoData);
+
             } catch (error) { console.error("Erro ao salvar solicitação: ", error); }
         });
         
@@ -2620,12 +2628,12 @@
                 console.log('Autenticação do Google bem-sucedida. Token:', googleAuthToken);
                 // Oculta o botão de login e mostra o conteúdo relacionado ao calendário
                 document.getElementById('google-sign-in-container').classList.add('hidden');
-                // Agora você pode chamar funções para listar/criar eventos do calendário
-                // Exemplo: listUpcomingEvents();
+                document.getElementById('google-auth-status').textContent = 'Conectado ao Google Calendar!';
             } else {
                 console.error('Falha na autenticação do Google:', resp);
                 // Exibe o botão de login novamente ou uma mensagem de erro
                 document.getElementById('google-sign-in-container').classList.remove('hidden');
+                document.getElementById('google-auth-status').textContent = 'Falha na conexão. Tente novamente.';
             }
         }
 
@@ -2635,9 +2643,70 @@
         function handleGoogleSignIn() {
             if (!gapiInited || !gisInited) {
                 console.warn('Bibliotecas do Google não carregadas completamente.');
+                document.getElementById('google-auth-status').textContent = 'Carregando bibliotecas do Google... Tente novamente em instantes.';
                 return;
             }
             window.google.accounts.id.prompt(); // Abre o seletor de conta do Google
+        }
+
+        /**
+         * Cria um evento no Google Calendar.
+         * @param {Object} eventData Dados do evento a ser criado.
+         */
+        async function createGoogleCalendarEvent(eventData) {
+            if (!googleAuthToken) {
+                console.warn('Usuário não autenticado no Google Calendar. Evento não será criado.');
+                document.getElementById('google-auth-status').textContent = 'Conecte-se ao Google Calendar para sincronizar eventos.';
+                return;
+            }
+
+            const cliente = allClientes.find(c => c.id === eventData.clienteId);
+            const fornecedor = allFornecedores.find(f => f.id === eventData.fornecedorId);
+
+            const event = {
+                'summary': `Obra: ${eventData.servico} - ${cliente ? cliente.nome : 'Cliente Desconhecido'}`,
+                'location': `${cliente ? cliente.endereco + ', ' + cliente.cidade : 'Local Desconhecido'}`,
+                'description': `
+                    Serviço/Produto: ${eventData.servico}
+                    Cliente: ${cliente ? cliente.nome : 'Desconhecido'}
+                    Ambiente: ${eventData.ambiente || 'N/A'}
+                    Responsável: ${eventData.responsavel || 'N/A'}
+                    Fornecedor: ${fornecedor ? fornecedor.nome : 'N/A'}
+                    Valor: ${formatCurrency(eventData.valor)}
+                    Descrição: ${eventData.descricao || 'N/A'}
+                    Observações: ${eventData.observacoes || 'N/A'}
+                `,
+                'start': {
+                    'date': eventData.inicioPrevisto,
+                    'timeZone': 'America/Sao_Paulo' // Ou outra timezone apropriada
+                },
+                'end': {
+                    'date': eventData.terminoPrevisto,
+                    'timeZone': 'America/Sao_Paulo' // Ou outra timezone apropriada
+                },
+                'reminders': {
+                    'useDefault': false,
+                    'overrides': [
+                        { 'method': 'email', 'minutes': 24 * 60 }, // 24 horas antes
+                        { 'method': 'popup', 'minutes': 30 }      // 30 minutos antes
+                    ]
+                }
+            };
+
+            try {
+                const response = await gapi.client.calendar.events.insert({
+                    'calendarId': 'primary', // 'primary' refere-se ao calendário principal do usuário
+                    'resource': event
+                });
+                console.log('Evento criado no Google Calendar:', response.result);
+                document.getElementById('google-auth-status').textContent = 'Evento sincronizado com o Google Calendar!';
+            } catch (error) {
+                console.error('Erro ao criar evento no Google Calendar:', error);
+                document.getElementById('google-auth-status').textContent = 'Erro ao sincronizar evento com o Google Calendar.';
+                if (error.result && error.result.error && error.result.error.message) {
+                    console.error('Detalhes do erro:', error.result.error.message);
+                }
+            }
         }
 
         // Adiciona um container para o botão de login do Google (pode ser posicionado onde desejar)
