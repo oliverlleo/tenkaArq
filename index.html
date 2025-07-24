@@ -1100,6 +1100,15 @@
         // Variável para armazenar o ID da compra selecionada para edição
         let selectedCompraId = null;
 
+        // Variáveis para a integração com o Google Calendar
+        const GOOGLE_CLIENT_ID = '772180922113-1l0c7e0jdq6qqelri3b292u3ukhr0s41.apps.googleusercontent.com'; // Seu ID do Cliente OAuth
+        const GOOGLE_DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
+        const GOOGLE_SCOPES = "https://www.googleapis.com/auth/calendar.events"; // Escopo para criar, editar e ler eventos
+
+        let gapiInited = false;
+        let gisInited = false;
+        let googleAuthToken = null;
+
 
         // --- UTILS ---
         const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
@@ -2544,6 +2553,112 @@
                 addMessage("Ops! Tive um problema para me conectar. Por favor, tente novamente mais tarde.", 'bot', 'sad.png');
             }
         });
+
+
+        // --- GOOGLE CALENDAR INTEGRATION ---
+
+        /**
+         * Carrega a biblioteca de cliente da API do Google.
+         * @param {function} callback Função a ser chamada após o carregamento.
+         */
+        function loadGapi(callback) {
+            const script = document.createElement('script');
+            script.src = 'https://apis.google.com/js/api.js';
+            script.onload = () => {
+                gapi.load('client:auth2', () => {
+                    gapiInited = true;
+                    callback();
+                });
+            };
+            document.head.appendChild(script);
+        }
+
+        /**
+         * Carrega a biblioteca de cliente do Google Identity Services.
+         * @param {function} callback Função a ser chamada após o carregamento.
+         */
+        function loadGis(callback) {
+            const script = document.createElement('script');
+            script.src = 'https://accounts.google.com/gsi/client';
+            script.onload = () => {
+                gisInited = true;
+                callback();
+            };
+            document.head.appendChild(script);
+        }
+
+        /**
+         * Inicializa o cliente da API do Google.
+         */
+        async function initializeGapiClient() {
+            await gapi.client.init({
+                apiKey: firebaseConfig.apiKey, // Pode ser sua chave de API do Firebase ou uma chave específica do Google Cloud para APIs públicas
+                clientId: GOOGLE_CLIENT_ID,
+                discoveryDocs: GOOGLE_DISCOVERY_DOCS,
+                scope: GOOGLE_SCOPES,
+            });
+        }
+
+        /**
+         * Inicializa o Google Identity Services (GIS).
+         */
+        function initializeGisClient() {
+            window.google.accounts.id.initialize({
+                client_id: GOOGLE_CLIENT_ID,
+                scope: GOOGLE_SCOPES,
+                callback: handleAuthResult,
+            });
+        }
+
+        /**
+         * Lida com o resultado da autenticação do Google.
+         * @param {Object} resp Resposta da autenticação.
+         */
+        async function handleAuthResult(resp) {
+            if (resp && resp.access_token) {
+                googleAuthToken = resp.access_token;
+                console.log('Autenticação do Google bem-sucedida. Token:', googleAuthToken);
+                // Oculta o botão de login e mostra o conteúdo relacionado ao calendário
+                document.getElementById('google-sign-in-container').classList.add('hidden');
+                // Agora você pode chamar funções para listar/criar eventos do calendário
+                // Exemplo: listUpcomingEvents();
+            } else {
+                console.error('Falha na autenticação do Google:', resp);
+                // Exibe o botão de login novamente ou uma mensagem de erro
+                document.getElementById('google-sign-in-container').classList.remove('hidden');
+            }
+        }
+
+        /**
+         * Inicia o fluxo de login do Google.
+         */
+        function handleGoogleSignIn() {
+            if (!gapiInited || !gisInited) {
+                console.warn('Bibliotecas do Google não carregadas completamente.');
+                return;
+            }
+            window.google.accounts.id.prompt(); // Abre o seletor de conta do Google
+        }
+
+        // Adiciona um container para o botão de login do Google (pode ser posicionado onde desejar)
+        const googleSignInContainer = document.createElement('div');
+        googleSignInContainer.id = 'google-sign-in-container';
+        googleSignInContainer.className = 'p-4 text-center';
+        googleSignInContainer.innerHTML = `
+            <button id="google-sign-in-button" class="btn-secondary py-2 px-4 inline-flex items-center justify-center">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo" class="w-5 h-5 mr-2">
+                Conectar Google Calendar
+            </button>
+            <p id="google-auth-status" class="text-sm text-secondary mt-2"></p>
+        `;
+        // Adicione este container em algum lugar da sua main, por exemplo, no dashboard
+        document.querySelector('#view-dashboard').prepend(googleSignInContainer);
+
+        document.getElementById('google-sign-in-button').addEventListener('click', handleGoogleSignIn);
+
+        // Carrega as bibliotecas do Google
+        loadGapi(initializeGapiClient);
+        loadGis(initializeGisClient);
 
 
         // --- INITIALIZATION & REALTIME LISTENERS ---
