@@ -1787,7 +1787,7 @@
                 tasksContainer.className = 'flex-grow overflow-y-auto';
 
                 const currentDate = new Date(year, month, i);
-                const tasksForDay = tasksForMonth.filter(task => {
+                const tasksForDay = allCompras.filter(task => {
                     if (!task.inicioPrevisto || !task.terminoPrevisto) return false;
                     const inicio = new Date(task.inicioPrevisto + 'T00:00:00');
                     const termino = new Date(task.terminoPrevisto + 'T00:00:00');
@@ -1897,7 +1897,7 @@
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
             for (let i = 0; i < firstDay; i++) {
-                container.innerHTML += `<div class="bg-gray-50 rounded"></div>`;
+                calBody.innerHTML += `<div class="bg-gray-50 rounded"></div>`;
             }
 
             for (let i = 1; i <= daysInMonth; i++) {
@@ -1905,7 +1905,7 @@
                 dayCell.className = 'border border-border-color rounded p-1 min-h-[100px] flex flex-col';
                 
                 const dayNumber = document.createElement('span');
-                const isToday = new Date(year, month, i).toDateString() === todayDate.toDateString();
+                const isToday = new Date(year, month, i).toDateString() === new Date().toDateString();
                 dayNumber.className = `text-xs ${isToday ? 'text-primary' : 'text-secondary'}`; 
                 dayNumber.textContent = i;
                 dayCell.appendChild(dayNumber);
@@ -2411,7 +2411,7 @@
             chatbotWindow.classList.toggle('visible');
         });
 
-        chatbotCloseBtn.addEventListener('click', () => {
+        chatbotCloseBtn.addEventListener(() => {
             chatbotWindow.classList.remove('visible');
         });
         
@@ -2600,7 +2600,8 @@
          */
         async function initializeGapiClient() {
             await gapi.client.init({
-                apiKey: firebaseConfig.apiKey, // Pode ser sua chave de API do Firebase ou uma chave específica do Google Cloud para APIs públicas
+                // A chave de API do seu projeto "Tenka" (número 772180922113)
+                apiKey: '772180922113-1l0c7e0jdq6qqelri3b292u3ukhr0s41.apps.googleusercontent.com', 
                 clientId: GOOGLE_CLIENT_ID,
                 discoveryDocs: GOOGLE_DISCOVERY_DOCS,
                 scope: GOOGLE_SCOPES,
