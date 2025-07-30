@@ -820,13 +820,13 @@
                                     <tr>
                                         <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider w-10"></th> <!-- Checkbox Header -->
                                         <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Nº</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Cliente</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Serviço/Produto</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Ambiente</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Responsável</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Datas Previstas</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Duração</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort-field="clienteId">Cliente <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort-field="servico">Serviço/Produto <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort-field="ambiente">Ambiente <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort-field="responsavel">Responsável <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort-field="inicioPrevisto">Datas Previstas <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort-field="duracao">Duração <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort-field="status">Status <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
                                         <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Ações</th>
                                     </tr>
                                 </thead>
@@ -1391,11 +1391,11 @@
                         <table class="min-w-full">
                              <thead>
                                 <tr>
-                                    <th class="px-2 py-2 text-left text-xs font-medium uppercase w-2/5">Item</th>
-                                    <th class="px-2 py-2 text-left text-xs font-medium uppercase w-2/5">Datas</th>
-                                    <th class="px-2 py-2 text-left text-xs font-medium uppercase">Valor</th>
-                                    <th class="px-2 py-2 text-left text-xs font-medium uppercase">% Orçam.</th>
-                                    <th class="px-2 py-2 text-left text-xs font-medium uppercase">Status</th>
+                                    <th class="px-2 py-2 text-left text-xs font-medium uppercase w-2/5 cursor-pointer hover:bg-gray-100" data-sort-field="servico">Item <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
+                                    <th class="px-2 py-2 text-left text-xs font-medium uppercase w-2/5 cursor-pointer hover:bg-gray-100" data-sort-field="inicioPrevisto">Datas <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
+                                    <th class="px-2 py-2 text-left text-xs font-medium uppercase cursor-pointer hover:bg-gray-100" data-sort-field="valor">Valor <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
+                                    <th class="px-2 py-2 text-left text-xs font-medium uppercase cursor-pointer hover:bg-gray-100" data-sort-field="percentual">% Orçam. <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
+                                    <th class="px-2 py-2 text-left text-xs font-medium uppercase cursor-pointer hover:bg-gray-100" data-sort-field="status">Status <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
                                     <th class="px-2 py-2 text-left text-xs font-medium uppercase">Ações</th>
                                 </tr>
                             </thead>
@@ -1542,6 +1542,9 @@
 
         // Estado da Aplicação
         let taskSortState = { field: 'dataInicio', direction: 'desc' }; // Um padrão inicial razoável
+        let compraSortState = { field: 'dataCompra', direction: 'desc' }; // Padrão inicial
+        let modalItemSortState = { field: 'servico', direction: 'asc' };
+        let modalTaskSortState = { field: 'titulo', direction: 'asc' };
         let allClientes = [];
         let allFornecedores = [];
         let allCategorias = [];
@@ -1660,18 +1663,18 @@
 
         // Função para renderizar uma TABELA de tarefas em um container específico
     const renderTaskTableInContainer = (tasks, containerEl) => {
-        const tbodyId = 'modal-task-table-body'; // ID único para o tbody do modal
+        const tbodyId = 'modal-task-table-body';
         containerEl.innerHTML = `
             <div class="overflow-x-auto">
                 <table class="min-w-full">
                     <thead>
                         <tr>
                             <th class="w-10"></th>
-                            <th>Tarefa</th>
-                            <th>Colaborador</th>
-                            <th>Fornecedor</th>
-                            <th>Datas</th>
-                            <th>Status</th>
+                            <th class="cursor-pointer hover:bg-gray-100" data-sort-field="titulo">Tarefa <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
+                            <th class="cursor-pointer hover:bg-gray-100" data-sort-field="colaboradorId">Colaborador <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
+                            <th class="cursor-pointer hover:bg-gray-100" data-sort-field="fornecedorId">Fornecedor <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
+                            <th class="cursor-pointer hover:bg-gray-100" data-sort-field="dataInicio">Datas <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
+                            <th class="cursor-pointer hover:bg-gray-100" data-sort-field="status">Status <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
                             <th>Ações</th>
                         </tr>
                     </thead>
@@ -1680,12 +1683,48 @@
             </div>
         `;
 
+        // --- NOVA LÓGICA DE ORDENAÇÃO DE TAREFAS ---
+        if (modalTaskSortState.field) {
+            tasks.sort((a, b) => {
+                let valA, valB;
+                if (modalTaskSortState.field === 'colaboradorId') {
+                    valA = allColaboradores.find(c => c.id === a.colaboradorId)?.nome || '';
+                    valB = allColaboradores.find(c => c.id === b.colaboradorId)?.nome || '';
+                } else if (modalTaskSortState.field === 'fornecedorId') {
+                    valA = allFornecedores.find(f => f.id === a.fornecedorId)?.nome || '';
+                    valB = allFornecedores.find(f => f.id === b.fornecedorId)?.nome || '';
+                } else {
+                    valA = a[modalTaskSortState.field] || '';
+                    valB = b[modalTaskSortState.field] || '';
+                }
+                if (typeof valA === 'string') valA = valA.toLowerCase();
+                if (typeof valB === 'string') valB = valB.toLowerCase();
+                let comparison = 0;
+                if (valA > valB) comparison = 1;
+                else if (valA < valB) comparison = -1;
+                return modalTaskSortState.direction === 'desc' ? comparison * -1 : comparison;
+            });
+        }
+
+        // --- ATUALIZAÇÃO DOS ÍCONES DO CABEÇALHO DE TAREFAS ---
+        containerEl.querySelectorAll('th[data-sort-field]').forEach(header => {
+            const icon = header.querySelector('i');
+            const field = header.dataset.sortField;
+            icon.className = 'fa-solid fa-sort text-gray-400 ml-1'; // Reset
+            if (modalTaskSortState.field === field) {
+                icon.className = modalTaskSortState.direction === 'asc' 
+                    ? 'fa-solid fa-sort-up text-accent-brown ml-1' 
+                    : 'fa-solid fa-sort-down text-accent-brown ml-1';
+            }
+        });
+
         const tbody = document.getElementById(tbodyId);
         if (tasks.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-secondary">Nenhuma tarefa encontrada para este cliente.</td></tr>`;
+             tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-secondary">Nenhuma tarefa encontrada para este cliente.</td></tr>`;
             return;
         }
 
+        // O loop forEach para renderizar as linhas de tarefas permanece o mesmo
         tasks.forEach(tarefa => {
             const hasSubtarefas = tarefa.subtarefas && tarefa.subtarefas.length > 0;
             const colaborador = allColaboradores.find(c => c.id === tarefa.colaboradorId);
@@ -2343,110 +2382,153 @@
         });
     };
 
-        const renderTabelaCompras = () => {
-            const tbody = document.getElementById('tabela-compras');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-            
-            const filtroGeral = document.getElementById('filtro-compras-geral').value.toLowerCase();
-            const filtroCliente = document.getElementById('filtro-compras-cliente').value;
-            const filtroResponsavel = document.getElementById('filtro-compras-responsavel').value;
-            const filtroStatus = document.getElementById('filtro-compras-status').value;
-            const ocultarFinalizados = document.getElementById('filtro-compras-ocultar-finalizados').checked;
+    const renderTabelaCompras = () => {
+        const tbody = document.getElementById('tabela-compras');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        
+        // --- LÓGICA DE FILTRAGEM (EXISTENTE) ---
+        const filtroGeral = document.getElementById('filtro-compras-geral').value.toLowerCase();
+        const filtroCliente = document.getElementById('filtro-compras-cliente').value;
+        const filtroResponsavel = document.getElementById('filtro-compras-responsavel').value;
+        const filtroStatus = document.getElementById('filtro-compras-status').value;
+        const ocultarFinalizados = document.getElementById('filtro-compras-ocultar-finalizados').checked;
 
-            const filteredCompras = allCompras
-                .filter(c => !ocultarFinalizados || c.status !== 'finalizado')
-                .filter(c => !filtroCliente || c.clienteId === filtroCliente)
-                .filter(c => !filtroResponsavel || c.responsavel === filtroResponsavel)
-                .filter(c => !filtroStatus || c.status === filtroStatus)
-                .filter(c => {
-                    if (!filtroGeral) return true;
-                    const cliente = allClientes.find(cli => cli.id === c.clienteId);
-                    const searchString = `${c.servico} ${c.ambiente} ${c.responsavel} ${cliente?.nome || ''} ${c.descricao || ''} ${c.observacoes || ''}`.toLowerCase();
-                    return searchString.includes(filtroGeral);
-                });
-
-            if (filteredCompras.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" class="text-center py-8 text-secondary">Nenhuma solicitação encontrada.</td></tr>`;
-                document.getElementById('btn-abrir-modal-editar-solicitacao').disabled = true;
-                return;
-            }
-
-            // Reset selected item and disable edit button if no longer in filtered list
-            if (selectedCompraId && !filteredCompras.some(c => c.id === selectedCompraId)) {
-                selectedCompraId = null;
-                document.getElementById('btn-abrir-modal-editar-solicitacao').disabled = true;
-            }
-
-            filteredCompras.forEach((compra, index) => {
-                const cliente = allClientes.find(c => c.id === compra.clienteId);
-                const statusMap = {
-                    'nao-iniciado': { text: 'Não Iniciado', color: 'bg-[var(--status-nao-iniciado-bg)] text-[var(--status-nao-iniciado-text)]' },
-                    'em-andamento': { text: 'Em Andamento', color: 'bg-[var(--status-em-andamento-bg)] text-[var(--status-em-andamento-text)]' },
-                    'parado': { text: 'Parado', color: 'bg-[var(--status-parado-bg)] text-[var(--status-parado-text)]' },
-                    'interrompido': { text: 'Interrompido', color: 'bg-[var(--status-interrompido-bg)] text-[var(--status-interrompido-text)]' },
-                    'atrasado': { text: 'Atrasado', color: 'bg-[var(--status-atrasado-bg)] text-[var(--status-atrasado-text)]' },
-                    'finalizado': { text: 'Finalizado', color: 'bg-[var(--status-finalizado-bg)] text-[var(--status-finalizado-text)]' },
-                };
-                const statusInfo = statusMap[compra.status] || statusMap['nao-iniciado'];
-
-                // Generate color for responsible
-                const responsibleBgColor = generateColorFromString(compra.responsavel || 'N/A');
-                const responsibleTextColor = getTextColorForBg(responsibleBgColor);
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="whitespace-nowrap text-sm font-medium text-primary">
-                        <input type="checkbox" data-id="${compra.id}" class="compra-checkbox form-checkbox h-4 w-4 text-green-600 rounded focus:ring-green-500 ${selectedCompraId === compra.id ? 'checked:bg-green-500 checked:border-transparent checked:ring-green-500' : ''}">
-                    </td>
-                    <td class="whitespace-nowrap text-sm font-medium text-primary">${index + 1}</td>
-                    <td class="whitespace-nowrap text-sm text-secondary">${cliente?.nome || 'N/A'}</td>
-                    <td class="whitespace-nowrap text-sm font-medium text-primary">${compra.servico}</td>
-                    <td class="whitespace-nowrap text-sm text-secondary">${compra.ambiente || 'N/A'}</td>
-                    <td class="whitespace-nowrap text-sm">
-                        <span class="status-badge" style="background-color: ${responsibleBgColor}; color: ${responsibleTextColor};">
-                            ${compra.responsavel || 'N/A'}
-                        </span>
-                    </td>
-                    <td class="whitespace-nowrap text-sm text-secondary">${formatDate(compra.inicioPrevisto)} - ${formatDate(compra.terminoPrevisto)}</td>
-                    <td class="whitespace-nowrap text-sm text-secondary">${calculateDays(compra.inicioPrevisto, compra.terminoPrevisto)}</td>
-                    <td class="whitespace-nowrap text-sm">
-                        <span class="status-badge ${statusInfo.color}">${statusInfo.text}</span>
-                    </td>
-                    <td class="whitespace-nowrap text-right text-sm font-medium">
-                        <div class="flex items-center space-x-3 text-lg">
-                            ${compra.status !== 'em-andamento' ? `<button title="Em Andamento" data-id="${compra.id}" data-status="em-andamento" class="btn-status-change text-blue-600 hover:text-blue-800"><i class="fa-solid fa-play"></i></button>` : ''}
-                            ${compra.status !== 'parado' ? `<button title="Parado" data-id="${compra.id}" data-status="parado" class="btn-status-change text-yellow-500 hover:text-yellow-700"><i class="fa-solid fa-pause"></i></button>` : ''}
-                            ${compra.status !== 'interrompido' ? `<button title="Interrompido" data-id="${compra.id}" data-status="interrompido" class="btn-status-change text-orange-500 hover:text-orange-700"><i class="fa-solid fa-triangle-exclamation"></i></button>` : ''}
-                            ${compra.status !== 'atrasado' ? `<button title="Atrasado" data-id="${compra.id}" data-status="atrasado" class="btn-status-change text-red-500 hover:text-red-700"><i class="fa-solid fa-clock"></i></button>` : ''}
-                            ${compra.status !== 'finalizado' ? `<button title="Finalizado" data-id="${compra.id}" data-status="finalizado" class="btn-status-change text-green-600 hover:text-green-800"><i class="fa-solid fa-check-double"></i></button>` : ''}
-                            <button title="Excluir" data-id="${compra.id}" data-collection="compras" class="btn-delete-item text-gray-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
+        const filteredCompras = allCompras
+            .filter(c => !ocultarFinalizados || c.status !== 'finalizado')
+            .filter(c => !filtroCliente || c.clienteId === filtroCliente)
+            // ... (resto da lógica de filtro existente) ...
+            .filter(c => !filtroResponsavel || c.responsavel === filtroResponsavel)
+            .filter(c => !filtroStatus || c.status === filtroStatus)
+            .filter(c => {
+                if (!filtroGeral) return true;
+                const cliente = allClientes.find(cli => cli.id === c.clienteId);
+                const searchString = `${c.servico} ${c.ambiente} ${c.responsavel} ${cliente?.nome || ''} ${c.descricao || ''} ${c.observacoes || ''}`.toLowerCase();
+                return searchString.includes(filtroGeral);
             });
 
-            // Add event listeners to new checkboxes
-            document.querySelectorAll('.compra-checkbox').forEach(checkbox => {
-                checkbox.addEventListener('change', (e) => {
-                    // Uncheck all other checkboxes
-                    document.querySelectorAll('.compra-checkbox').forEach(cb => {
-                        if (cb !== e.target) {
-                            cb.checked = false;
-                        }
-                    });
+        // --- NOVA LÓGICA DE ORDENAÇÃO ---
+        if (compraSortState.field) {
+            // Adiciona a propriedade de duração para poder ordenar por ela
+            filteredCompras.forEach(c => {
+                c.duracao = calculateDays(c.inicioPrevisto, c.terminoPrevisto);
+            });
 
-                    if (e.target.checked) {
-                        selectedCompraId = e.target.dataset.id;
-                        document.getElementById('btn-abrir-modal-editar-solicitacao').disabled = false;
-                    } else {
-                        selectedCompraId = null;
-                        document.getElementById('btn-abrir-modal-editar-solicitacao').disabled = true;
+            filteredCompras.sort((a, b) => {
+                let valA, valB;
+
+                if (compraSortState.field === 'clienteId') {
+                    valA = allClientes.find(c => c.id === a.clienteId)?.nome || '';
+                    valB = allClientes.find(c => c.id === b.clienteId)?.nome || '';
+                } else if (compraSortState.field === 'duracao') {
+                    // Extrai o número de dias para a ordenação
+                    valA = parseInt(a.duracao) || 0;
+                    valB = parseInt(b.duracao) || 0;
+                } else {
+                    valA = a[compraSortState.field] || '';
+                    valB = b[compraSortState.field] || '';
+                }
+                
+                if (typeof valA === 'string') valA = valA.toLowerCase();
+                if (typeof valB === 'string') valB = valB.toLowerCase();
+
+                let comparison = 0;
+                if (valA > valB) comparison = 1;
+                else if (valA < valB) comparison = -1;
+                
+                return compraSortState.direction === 'desc' ? comparison * -1 : comparison;
+            });
+        }
+
+        // --- ATUALIZAÇÃO DOS ÍCONES DOS CABEÇALHOS ---
+        document.querySelectorAll('#view-compras th[data-sort-field]').forEach(header => {
+            const icon = header.querySelector('i');
+            const field = header.dataset.sortField;
+            icon.className = 'fa-solid fa-sort text-gray-400 ml-1'; // Reset
+            if (compraSortState.field === field) {
+                icon.className = compraSortState.direction === 'asc' 
+                    ? 'fa-solid fa-sort-up text-accent-brown ml-1' 
+                    : 'fa-solid fa-sort-down text-accent-brown ml-1';
+            }
+        });
+
+        if (filteredCompras.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="10" class="text-center py-8 text-secondary">Nenhuma solicitação encontrada.</td></tr>`;
+            document.getElementById('btn-abrir-modal-editar-solicitacao').disabled = true;
+            return;
+        }
+
+        // --- LÓGICA DE RENDERIZAÇÃO DAS LINHAS (EXISTENTE) ---
+        // O código restante da função (o loop forEach) permanece o mesmo.
+        filteredCompras.forEach((compra, index) => {
+            const cliente = allClientes.find(c => c.id === compra.clienteId);
+            const statusMap = {
+                'nao-iniciado': { text: 'Não Iniciado', color: 'bg-[var(--status-nao-iniciado-bg)] text-[var(--status-nao-iniciado-text)]' },
+                'em-andamento': { text: 'Em Andamento', color: 'bg-[var(--status-em-andamento-bg)] text-[var(--status-em-andamento-text)]' },
+                'parado': { text: 'Parado', color: 'bg-[var(--status-parado-bg)] text-[var(--status-parado-text)]' },
+                'interrompido': { text: 'Interrompido', color: 'bg-[var(--status-interrompido-bg)] text-[var(--status-interrompido-text)]' },
+                'atrasado': { text: 'Atrasado', color: 'bg-[var(--status-atrasado-bg)] text-[var(--status-atrasado-text)]' },
+                'finalizado': { text: 'Finalizado', color: 'bg-[var(--status-finalizado-bg)] text-[var(--status-finalizado-text)]' },
+            };
+            const statusInfo = statusMap[compra.status] || statusMap['nao-iniciado'];
+
+            // Generate color for responsible
+            const responsibleBgColor = generateColorFromString(compra.responsavel || 'N/A');
+            const responsibleTextColor = getTextColorForBg(responsibleBgColor);
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="whitespace-nowrap text-sm font-medium text-primary">
+                    <input type="checkbox" data-id="${compra.id}" class="compra-checkbox form-checkbox h-4 w-4 text-green-600 rounded focus:ring-green-500 ${selectedCompraId === compra.id ? 'checked:bg-green-500 checked:border-transparent checked:ring-green-500' : ''}">
+                </td>
+                <td class="whitespace-nowrap text-sm font-medium text-primary">${index + 1}</td>
+                <td class="whitespace-nowrap text-sm text-secondary">${cliente?.nome || 'N/A'}</td>
+                <td class="whitespace-nowrap text-sm font-medium text-primary">${compra.servico}</td>
+                <td class="whitespace-nowrap text-sm text-secondary">${compra.ambiente || 'N/A'}</td>
+                <td class="whitespace-nowrap text-sm">
+                    <span class="status-badge" style="background-color: ${responsibleBgColor}; color: ${responsibleTextColor};">
+                        ${compra.responsavel || 'N/A'}
+                    </span>
+                </td>
+                <td class="whitespace-nowrap text-sm text-secondary">${formatDate(compra.inicioPrevisto)} - ${formatDate(compra.terminoPrevisto)}</td>
+                <td class="whitespace-nowrap text-sm text-secondary">${calculateDays(compra.inicioPrevisto, compra.terminoPrevisto)}</td>
+                <td class="whitespace-nowrap text-sm">
+                    <span class="status-badge ${statusInfo.color}">${statusInfo.text}</span>
+                </td>
+                <td class="whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex items-center space-x-3 text-lg">
+                        ${compra.status !== 'em-andamento' ? `<button title="Em Andamento" data-id="${compra.id}" data-status="em-andamento" class="btn-status-change text-blue-600 hover:text-blue-800"><i class="fa-solid fa-play"></i></button>` : ''}
+                        ${compra.status !== 'parado' ? `<button title="Parado" data-id="${compra.id}" data-status="parado" class="btn-status-change text-yellow-500 hover:text-yellow-700"><i class="fa-solid fa-pause"></i></button>` : ''}
+                        ${compra.status !== 'interrompido' ? `<button title="Interrompido" data-id="${compra.id}" data-status="interrompido" class="btn-status-change text-orange-500 hover:text-orange-700"><i class="fa-solid fa-triangle-exclamation"></i></button>` : ''}
+                        ${compra.status !== 'atrasado' ? `<button title="Atrasado" data-id="${compra.id}" data-status="atrasado" class="btn-status-change text-red-500 hover:text-red-700"><i class="fa-solid fa-clock"></i></button>` : ''}
+                        ${compra.status !== 'finalizado' ? `<button title="Finalizado" data-id="${compra.id}" data-status="finalizado" class="btn-status-change text-green-600 hover:text-green-800"><i class="fa-solid fa-check-double"></i></button>` : ''}
+                        <button title="Excluir" data-id="${compra.id}" data-collection="compras" class="btn-delete-item text-gray-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        // Add event listeners to new checkboxes
+        document.querySelectorAll('.compra-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                // Uncheck all other checkboxes
+                document.querySelectorAll('.compra-checkbox').forEach(cb => {
+                    if (cb !== e.target) {
+                        cb.checked = false;
                     }
                 });
+
+                if (e.target.checked) {
+                    selectedCompraId = e.target.dataset.id;
+                    document.getElementById('btn-abrir-modal-editar-solicitacao').disabled = false;
+                } else {
+                    selectedCompraId = null;
+                    document.getElementById('btn-abrir-modal-editar-solicitacao').disabled = true;
+                }
             });
-        };
+        });
+    };
 
         const renderTabelaClientes = () => {
             const tbody = document.getElementById('tabela-clientes');
@@ -2675,162 +2757,198 @@
             });
         };
         
-        const openDetalhesClienteModal = (clienteId) => {
-            const cliente = allClientes.find(c => c.id === clienteId);
-            if (!cliente) return;
+    const openDetalhesClienteModal = (clienteId) => {
+        const cliente = allClientes.find(c => c.id === clienteId);
+        if (!cliente) return;
 
-            clientModalCalendarState.clienteId = clienteId;
+        // ... (código existente para popular nome, OS, orçamento, etc.) ...
+        clientModalCalendarState.clienteId = clienteId;
 
-            const comprasCliente = allCompras.filter(c => c.clienteId === clienteId);
-            const gastoTotal = comprasCliente.reduce((acc, item) => acc + item.valor, 0);
-            const saldo = cliente.orcamento - gastoTotal;
+        const gastoTotal = allCompras.filter(c => c.clienteId === clienteId).reduce((acc, item) => acc + item.valor, 0);
+        const saldo = cliente.orcamento - gastoTotal;
 
-            document.getElementById('detalhes-cliente-nome').textContent = cliente.nome;
-            document.getElementById('detalhes-cliente-os').textContent = `OS: ${cliente.os}`;
-            document.getElementById('detalhes-cliente-orcamento').textContent = formatCurrency(cliente.orcamento);
-            document.getElementById('detalhes-cliente-gasto').textContent = formatCurrency(gastoTotal);
-            document.getElementById('detalhes-cliente-saldo').textContent = formatCurrency(saldo);
-            
-            const tbody = document.getElementById('tabela-detalhes-cliente');
-            tbody.innerHTML = ''; // Clear existing content
+        document.getElementById('detalhes-cliente-nome').textContent = cliente.nome;
+        document.getElementById('detalhes-cliente-os').textContent = `OS: ${cliente.os}`;
+        document.getElementById('detalhes-cliente-orcamento').textContent = formatCurrency(cliente.orcamento);
+        document.getElementById('detalhes-cliente-gasto').textContent = formatCurrency(gastoTotal);
+        document.getElementById('detalhes-cliente-saldo').textContent = formatCurrency(saldo);
+        
+        const tbody = document.getElementById('tabela-detalhes-cliente');
+        tbody.innerHTML = '';
 
-            if (comprasCliente.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-secondary">Nenhum item para este cliente.</td></tr>`;
-            } else {
-                comprasCliente.forEach(item => {
-                    const percentual = cliente.orcamento > 0 ? (item.valor / cliente.orcamento) * 100 : 0;
-                    const percentualColorClass = getPercentualColor(percentual);
-                    const statusMap = {
-                        'nao-iniciado': { text: 'Não Iniciado', color: 'bg-[var(--status-nao-iniciado-bg)] text-[var(--status-nao-iniciado-text)]' },
-                        'em-andamento': { text: 'Em Andamento', color: 'bg-[var(--status-em-andamento-bg)] text-[var(--status-em-andamento-text)]' },
-                        'parado': { text: 'Parado', color: 'bg-[var(--status-parado-bg)] text-[var(--status-parado-text)]' },
-                        'interrompido': { text: 'Interrompido', color: 'bg-[var(--status-interrompido-bg)] text-[var(--status-interrompido-text)]' },
-                        'atrasado': { text: 'Atrasado', color: 'bg-[var(--status-atrasado-bg)] text-[var(--status-atrasado-text)]' },
-                        'finalizado': { text: 'Finalizado', color: 'bg-[var(--status-finalizado-bg)] text-[var(--status-finalizado-text)]' },
-                    };
-                    const statusInfo = statusMap[item.status] || statusMap['nao-iniciado'];
+        let comprasCliente = allCompras.filter(c => c.clienteId === clienteId);
 
-                    // Desktop row structure
-                    const desktopRow = document.createElement('tr');
-                    desktopRow.className = 'desktop-row'; // Class to hide on mobile
-                    desktopRow.innerHTML = `
-                        <td class="align-middle break-words">
-                            <p class="text-sm font-semibold text-primary">${item.servico}</p>
+        // Adiciona o campo 'percentual' para poder ordenar
+        comprasCliente.forEach(item => {
+            item.percentual = cliente.orcamento > 0 ? (item.valor / cliente.orcamento) * 100 : 0;
+        });
+
+        // --- NOVA LÓGICA DE ORDENAÇÃO DE ITENS ---
+        if (modalItemSortState.field) {
+            comprasCliente.sort((a, b) => {
+                let valA = a[modalItemSortState.field] || '';
+                let valB = b[modalItemSortState.field] || '';
+
+                if (typeof valA === 'string') valA = valA.toLowerCase();
+                if (typeof valB === 'string') valB = valB.toLowerCase();
+
+                let comparison = 0;
+                if (valA > valB) comparison = 1;
+                else if (valA < valB) comparison = -1;
+                
+                return modalItemSortState.direction === 'desc' ? comparison * -1 : comparison;
+            });
+        }
+        
+        // --- ATUALIZAÇÃO DOS ÍCONES DO CABEÇALHO DE ITENS ---
+        document.querySelectorAll('#container-detalhes-itens th[data-sort-field]').forEach(header => {
+            const icon = header.querySelector('i');
+            const field = header.dataset.sortField;
+            icon.className = 'fa-solid fa-sort text-gray-400 ml-1'; // Reset
+            if (modalItemSortState.field === field) {
+                icon.className = modalItemSortState.direction === 'asc' 
+                    ? 'fa-solid fa-sort-up text-accent-brown ml-1' 
+                    : 'fa-solid fa-sort-down text-accent-brown ml-1';
+            }
+        });
+
+        if (comprasCliente.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-secondary">Nenhum item para este cliente.</td></tr>`;
+        } else {
+            // O loop forEach para renderizar as linhas permanece o mesmo
+            comprasCliente.forEach(item => {
+                const percentualColorClass = getPercentualColor(item.percentual);
+                const statusMap = {
+                    'nao-iniciado': { text: 'Não Iniciado', color: 'bg-[var(--status-nao-iniciado-bg)] text-[var(--status-nao-iniciado-text)]' },
+                    'em-andamento': { text: 'Em Andamento', color: 'bg-[var(--status-em-andamento-bg)] text-[var(--status-em-andamento-text)]' },
+                    'parado': { text: 'Parado', color: 'bg-[var(--status-parado-bg)] text-[var(--status-parado-text)]' },
+                    'interrompido': { text: 'Interrompido', color: 'bg-[var(--status-interrompido-bg)] text-[var(--status-interrompido-text)]' },
+                    'atrasado': { text: 'Atrasado', color: 'bg-[var(--status-atrasado-bg)] text-[var(--status-atrasado-text)]' },
+                    'finalizado': { text: 'Finalizado', color: 'bg-[var(--status-finalizado-bg)] text-[var(--status-finalizado-text)]' },
+                };
+                const statusInfo = statusMap[item.status] || statusMap['nao-iniciado'];
+
+                // Desktop row structure
+                const desktopRow = document.createElement('tr');
+                desktopRow.className = 'desktop-row'; // Class to hide on mobile
+                desktopRow.innerHTML = `
+                    <td class="align-middle break-words">
+                        <p class="text-sm font-semibold text-primary">${item.servico}</p>
+                        <p class="text-xs text-secondary">${item.descricao || 'Sem descrição'}</p>
+                        <p class="text-xs text-secondary mt-1"><strong>Ambiente:</strong> ${item.ambiente || 'N/A'} | <strong>Resp:</strong> ${item.responsavel || 'N/A'}</p>
+                    </td>
+                    <td class="align-middle break-words text-sm text-secondary">
+                        <p><strong>Compra:</strong> ${formatDate(item.dataCompra)}</p>
+                        <p><strong>Entrega:</strong> ${formatDate(item.prazoEntrega)}</p>
+                        <p><strong>Previsto:</strong> ${formatDate(item.inicioPrevisto)} a ${formatDate(item.terminoPrevisto)} (${calculateDays(item.inicioPrevisto, item.terminoPrevisto)})</p>
+                    </td>
+                    <td class="align-middle break-words text-sm font-semibold text-primary">${formatCurrency(item.valor)}</td>
+                    <td class="align-middle break-words text-sm ${percentualColorClass}">${item.percentual.toFixed(1)}%</td>
+                    <td class="align-middle">
+                        <span class="status-badge ${statusInfo.color}">${statusInfo.text}</span>
+                    </td>
+                    <td class="align-middle">
+                        <div class="flex items-center space-x-2 text-lg">
+                            ${item.status !== 'em-andamento' ? `<button title="Em Andamento" data-id="${item.id}" data-status="em-andamento" class="btn-status-change text-blue-600 hover:text-blue-800"><i class="fa-solid fa-play"></i></button>` : ''}
+                            ${item.status !== 'parado' ? `<button title="Parado" data-id="${item.id}" data-status="parado" class="btn-status-change text-yellow-500 hover:text-yellow-700"><i class="fa-solid fa-pause"></i></button>` : ''}
+                            ${item.status !== 'interrompido' ? `<button title="Interrompido" data-id="${item.id}" data-status="interrompido" class="btn-status-change text-orange-500 hover:text-orange-700"><i class="fa-solid fa-triangle-exclamation"></i></button>` : ''}
+                            ${item.status !== 'atrasado' ? `<button title="Atrasado" data-id="${item.id}" data-status="atrasado" class="btn-status-change text-red-500 hover:text-red-700"><i class="fa-solid fa-clock"></i></button>` : ''}
+                            ${item.status !== 'finalizado' ? `<button title="Finalizado" data-id="${item.id}" data-status="finalizado" class="btn-status-change text-green-600 hover:text-green-800"><i class="fa-solid fa-check-double"></i></button>` : ''}
+                            <button title="Excluir" data-id="${item.id}" data-collection="compras" class="btn-delete-item text-gray-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(desktopRow);
+
+                // Mobile card structure
+                const mobileCard = document.createElement('tr');
+                mobileCard.className = 'mobile-card'; // Class to hide on desktop
+                mobileCard.innerHTML = `
+                    <td class="align-middle break-words">
+                        <div class="flex flex-col">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="text-base font-semibold text-primary">${item.servico}</h3>
+                                <span class="status-badge ${statusInfo.color}">${statusInfo.text}</span>
+                            </div>
                             <p class="text-xs text-secondary">${item.descricao || 'Sem descrição'}</p>
-                            <p class="text-xs text-secondary mt-1"><strong>Ambiente:</strong> ${item.ambiente || 'N/A'} | <strong>Resp:</strong> ${item.responsavel || 'N/A'}</p>
-                        </td>
-                        <td class="align-middle break-words text-sm text-secondary">
-                            <p><strong>Compra:</strong> ${formatDate(item.dataCompra)}</p>
-                            <p><strong>Entrega:</strong> ${formatDate(item.prazoEntrega)}</p>
-                            <p><strong>Previsto:</strong> ${formatDate(item.inicioPrevisto)} a ${formatDate(item.terminoPrevisto)} (${calculateDays(item.inicioPrevisto, item.terminoPrevisto)})</p>
-                        </td>
-                        <td class="align-middle break-words text-sm font-semibold text-primary">${formatCurrency(item.valor)}</td>
-                        <td class="align-middle break-words text-sm ${percentualColorClass}">${percentual.toFixed(1)}%</td>
-                        <td class="align-middle">
-                            <span class="status-badge ${statusInfo.color}">${statusInfo.text}</span>
-                        </td>
-                        <td class="align-middle">
-                            <div class="flex items-center space-x-2 text-lg">
-                                ${item.status !== 'em-andamento' ? `<button title="Em Andamento" data-id="${item.id}" data-status="em-andamento" class="btn-status-change text-blue-600 hover:text-blue-800"><i class="fa-solid fa-play"></i></button>` : ''}
-                                ${item.status !== 'parado' ? `<button title="Parado" data-id="${item.id}" data-status="parado" class="btn-status-change text-yellow-500 hover:text-yellow-700"><i class="fa-solid fa-pause"></i></button>` : ''}
-                                ${item.status !== 'interrompido' ? `<button title="Interrompido" data-id="${item.id}" data-status="interrompido" class="btn-status-change text-orange-500 hover:text-orange-700"><i class="fa-solid fa-triangle-exclamation"></i></button>` : ''}
-                                ${item.status !== 'atrasado' ? `<button title="Atrasado" data-id="${item.id}" data-status="atrasado" class="btn-status-change text-red-500 hover:text-red-700"><i class="fa-solid fa-clock"></i></button>` : ''}
-                                ${item.status !== 'finalizado' ? `<button title="Finalizado" data-id="${item.id}" data-status="finalizado" class="btn-status-change text-green-600 hover:text-green-800"><i class="fa-solid fa-check-double"></i></button>` : ''}
-                                <button title="Excluir" data-id="${item.id}" data-collection="compras" class="btn-delete-item text-gray-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                            <p class="text-xs text-secondary mt-1"><strong>Ambiente:</strong> ${item.ambiente || 'N/A'} | <strong>Responsável:</strong> ${item.responsavel || 'N/A'}</p>
+                            
+                            <div class="grid grid-cols-2 gap-y-1 text-sm text-secondary my-3 border-t border-b border-border-color py-2">
+                                <div><strong>Valor:</strong> <span class="font-semibold text-primary">${formatCurrency(item.valor)}</span></div>
+                                <div><strong>% Orçam.:</strong> <span class="${percentualColorClass}">${item.percentual.toFixed(1)}%</span></div>
+                                <div class="col-span-2"><strong>Compra:</strong> ${formatDate(item.dataCompra)}</div>
+                                <div class="col-span-2"><strong>Entrega:</strong> ${formatDate(item.prazoEntrega)}</div>
+                                <div class="col-span-2"><strong>Previsto:</strong> ${formatDate(item.inicioPrevisto)} a ${formatDate(item.terminoPrevisto)} (${calculateDays(item.inicioPrevisto, item.terminoPrevisto)})</p>
                             </div>
-                        </td>
-                    `;
-                    tbody.appendChild(desktopRow);
 
-                    // Mobile card structure
-                    const mobileCard = document.createElement('tr');
-                    mobileCard.className = 'mobile-card'; // Class to hide on desktop
-                    mobileCard.innerHTML = `
-                        <td class="align-middle break-words">
-                            <div class="flex flex-col">
-                                <div class="flex justify-between items-start mb-2">
-                                    <h3 class="text-base font-semibold text-primary">${item.servico}</h3>
-                                    <span class="status-badge ${statusInfo.color}">${statusInfo.text}</span>
-                                </div>
-                                <p class="text-xs text-secondary">${item.descricao || 'Sem descrição'}</p>
-                                <p class="text-xs text-secondary mt-1"><strong>Ambiente:</strong> ${item.ambiente || 'N/A'} | <strong>Responsável:</strong> ${item.responsavel || 'N/A'}</p>
-                                
-                                <div class="grid grid-cols-2 gap-y-1 text-sm text-secondary my-3 border-t border-b border-border-color py-2">
-                                    <div><strong>Valor:</strong> <span class="font-semibold text-primary">${formatCurrency(item.valor)}</span></div>
-                                    <div><strong>% Orçam.:</strong> <span class="${percentualColorClass}">${percentual.toFixed(1)}%</span></div>
-                                    <div class="col-span-2"><strong>Compra:</strong> ${formatDate(item.dataCompra)}</div>
-                                    <div class="col-span-2"><strong>Entrega:</strong> ${formatDate(item.prazoEntrega)}</div>
-                                    <div class="col-span-2"><strong>Previsto:</strong> ${formatDate(item.inicioPrevisto)} a ${formatDate(item.terminoPrevisto)} (${calculateDays(item.inicioPrevisto, item.terminoPrevisto)})</p>
-                                </div>
-
-                                <div class="flex flex-nowrap items-center justify-end gap-2 text-lg mt-2">
-                                    ${item.status !== 'em-andamento' ? `<button title="Em Andamento" data-id="${item.id}" data-status="em-andamento" class="btn-status-change text-blue-600 hover:text-blue-800 p-1 rounded-full"><i class="fa-solid fa-play"></i></button>` : ''}
-                                    ${item.status !== 'parado' ? `<button title="Parado" data-id="${item.id}" data-status="parado" class="btn-status-change text-yellow-500 hover:text-yellow-700 p-1 rounded-full"><i class="fa-solid fa-pause"></i></button>` : ''}
-                                    ${item.status !== 'interrompido' ? `<button title="Interrompido" data-id="${item.id}" data-status="interrompido" class="btn-status-change text-orange-500 hover:text-orange-700 p-1 rounded-full"><i class="fa-solid fa-triangle-exclamation"></i></button>` : ''}
-                                    ${item.status !== 'atrasado' ? `<button title="Atrasado" data-id="${item.id}" data-status="atrasado" class="btn-status-change text-red-500 hover:text-red-700 p-1 rounded-full"><i class="fa-solid fa-clock"></i></button>` : ''}
-                                    ${item.status !== 'finalizado' ? `<button title="Finalizado" data-id="${item.id}" data-status="finalizado" class="btn-status-change text-green-600 hover:text-green-800 p-1 rounded-full"><i class="fa-solid fa-check-double"></i></button>` : ''}
-                                    <button title="Excluir" data-id="${item.id}" data-collection="compras" class="btn-delete-item text-gray-500 hover:text-red-600 p-1 rounded-full"><i class="fa-solid fa-trash"></i></button>
-                                </div>
+                            <div class="flex flex-nowrap items-center justify-end gap-2 text-lg mt-2">
+                                ${item.status !== 'em-andamento' ? `<button title="Em Andamento" data-id="${item.id}" data-status="em-andamento" class="btn-status-change text-blue-600 hover:text-blue-800 p-1 rounded-full"><i class="fa-solid fa-play"></i></button>` : ''}
+                                ${item.status !== 'parado' ? `<button title="Parado" data-id="${item.id}" data-status="parado" class="btn-status-change text-yellow-500 hover:text-yellow-700 p-1 rounded-full"><i class="fa-solid fa-pause"></i></button>` : ''}
+                                ${item.status !== 'interrompido' ? `<button title="Interrompido" data-id="${item.id}" data-status="interrompido" class="btn-status-change text-orange-500 hover:text-orange-700 p-1 rounded-full"><i class="fa-solid fa-triangle-exclamation"></i></button>` : ''}
+                                ${item.status !== 'atrasado' ? `<button title="Atrasado" data-id="${item.id}" data-status="atrasado" class="btn-status-change text-red-500 hover:text-red-700 p-1 rounded-full"><i class="fa-solid fa-clock"></i></button>` : ''}
+                                ${item.status !== 'finalizado' ? `<button title="Finalizado" data-id="${item.id}" data-status="finalizado" class="btn-status-change text-green-600 hover:text-green-800 p-1 rounded-full"><i class="fa-solid fa-check-double"></i></button>` : ''}
+                                <button title="Excluir" data-id="${item.id}" data-collection="compras" class="btn-delete-item text-gray-500 hover:text-red-600 p-1 rounded-full"><i class="fa-solid fa-trash"></i></button>
                             </div>
-                        </td>
-                    `;
-                    tbody.appendChild(mobileCard);
-                });
-            }
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(mobileCard);
+            });
+        }
+        
+        // ... (resto da função existente: links, calendário, etc.) ...
+        const linksContainer = document.getElementById('detalhes-cliente-links-responsaveis');
+        linksContainer.innerHTML = '';
+        const responsaveis = [...new Set(comprasCliente.map(c => c.responsavel).filter(Boolean))];
+        if (responsaveis.length > 0) {
+            responsaveis.forEach(r => {
+                const link = document.createElement('a');
+                link.href = `?responsavel=${encodeURIComponent(r)}#responsavel-view`;
+                link.target = '_blank';
+                link.className = 'bg-gray-200 text-gray-700 hover:bg-gray-300 text-xs font-semibold py-1 px-3 rounded-full';
+                link.innerHTML = `<i class="fa-solid fa-link mr-1"></i> ${r}`;
+                linksContainer.appendChild(link);
+            });
+        } else {
+            linksContainer.innerHTML = `<p class="text-xs text-gray-400">Nenhum responsável atribuído aos itens.</p>`
+        }
 
-            const linksContainer = document.getElementById('detalhes-cliente-links-responsaveis');
-            linksContainer.innerHTML = '';
-            const responsaveis = [...new Set(comprasCliente.map(c => c.responsavel).filter(Boolean))];
-            if (responsaveis.length > 0) {
-                responsaveis.forEach(r => {
-                    const link = document.createElement('a');
-                    link.href = `?responsavel=${encodeURIComponent(r)}#responsavel-view`;
-                    link.target = '_blank';
-                    link.className = 'bg-gray-200 text-gray-700 hover:bg-gray-300 text-xs font-semibold py-1 px-3 rounded-full';
-                    link.innerHTML = `<i class="fa-solid fa-link mr-1"></i> ${r}`;
-                    linksContainer.appendChild(link);
-                });
-            } else {
-                linksContainer.innerHTML = `<p class="text-xs text-gray-400">Nenhum responsável atribuído aos itens.</p>`
-            }
+        renderWeeklyCalendar(clienteId);
+        openModal('modal-detalhes-cliente');
+        // ... (listeners para as abas 'Itens' e 'Tarefas') ...
+        const btnItens = document.getElementById('btn-view-detalhes-itens');
+        const btnTarefas = document.getElementById('btn-view-detalhes-tarefas');
+        const containerItens = document.getElementById('container-detalhes-itens');
+        const containerTarefas = document.getElementById('container-detalhes-tarefas');
+        const viewTitle = document.getElementById('detalhes-view-title');
 
-            renderWeeklyCalendar(clienteId);
-            openModal('modal-detalhes-cliente');
+        // Estado inicial (reset)
+        btnItens.classList.add('view-btn-active');
+        btnTarefas.classList.remove('view-btn-active');
+        containerItens.classList.remove('hidden');
+        containerTarefas.classList.add('hidden');
+        viewTitle.textContent = 'Itens da Obra';
 
-            // Adicionar ao final de openDetalhesClienteModal
-            const btnItens = document.getElementById('btn-view-detalhes-itens');
-            const btnTarefas = document.getElementById('btn-view-detalhes-tarefas');
-            const containerItens = document.getElementById('container-detalhes-itens');
-            const containerTarefas = document.getElementById('container-detalhes-tarefas');
-            const viewTitle = document.getElementById('detalhes-view-title');
 
-            // Estado inicial (reset)
+        btnItens.addEventListener('click', () => {
             btnItens.classList.add('view-btn-active');
             btnTarefas.classList.remove('view-btn-active');
             containerItens.classList.remove('hidden');
             containerTarefas.classList.add('hidden');
             viewTitle.textContent = 'Itens da Obra';
+        });
 
-
-            btnItens.addEventListener('click', () => {
-                btnItens.classList.add('view-btn-active');
-                btnTarefas.classList.remove('view-btn-active');
-                containerItens.classList.remove('hidden');
-                containerTarefas.classList.add('hidden');
-                viewTitle.textContent = 'Itens da Obra';
-            });
-
-            btnTarefas.addEventListener('click', () => {
-                btnTarefas.classList.add('view-btn-active');
-                btnItens.classList.remove('view-btn-active');
-                containerTarefas.classList.remove('hidden');
-                containerItens.classList.add('hidden');
-                viewTitle.textContent = 'Tarefas da Obra';
-                
-                // A função de renderização agora é chamada TODA VEZ, garantindo dados atualizados.
-                renderDetalhesClienteTarefasView(clienteId);
-            });
-        }
+        btnTarefas.addEventListener('click', () => {
+            btnTarefas.classList.add('view-btn-active');
+            btnItens.classList.remove('view-btn-active');
+            containerTarefas.classList.remove('hidden');
+            containerItens.classList.add('hidden');
+            viewTitle.textContent = 'Tarefas da Obra';
+            
+            // A função de renderização agora é chamada TODA VEZ, garantindo dados atualizados.
+            renderDetalhesClienteTarefasView(clienteId);
+        });
+    };
         
         const renderViewResponsavel = (nomeResponsavel) => {
             document.getElementById('app-container').classList.add('hidden');
@@ -4360,9 +4478,11 @@ document.getElementById('subtarefas-container').addEventListener('click', e => {
             const userPrefsSnapshot = await getDoc(userPrefsDoc);
             if (userPrefsSnapshot.exists()) {
                 const prefs = userPrefsSnapshot.data();
-                if (prefs.taskSort) {
-                    taskSortState = prefs.taskSort;
-                }
+                if (prefs.taskSort) { taskSortState = prefs.taskSort; }
+                if (prefs.compraSort) { compraSortState = prefs.compraSort; }
+                // ADICIONE ESTE BLOCO
+                if (prefs.modalItemSort) { modalItemSortState = prefs.modalItemSort; }
+                if (prefs.modalTaskSort) { modalTaskSortState = prefs.modalTaskSort; }
             }
 
             // Adiciona os listeners para os cabeçalhos da tabela DEPOIS de carregar as prefs
@@ -4382,6 +4502,53 @@ document.getElementById('subtarefas-container').addEventListener('click', e => {
                     // Re-renderiza a tabela
                     renderTabelaTarefas();
                 });
+            });
+
+            // ADICIONE ESTE NOVO BLOCO DE LISTENERS PARA A TABELA DE COMPRAS
+            document.querySelectorAll('#view-compras th[data-sort-field]').forEach(header => {
+                header.addEventListener('click', async () => {
+                    const field = header.dataset.sortField;
+                    if (compraSortState.field === field) {
+                        compraSortState.direction = compraSortState.direction === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        compraSortState.field = field;
+                        compraSortState.direction = 'asc';
+                    }
+                    await setDoc(userPrefsDoc, { compraSort: compraSortState }, { merge: true });
+                    renderTabelaCompras();
+                });
+            });
+
+            // ADICIONE ESTE NOVO BLOCO PARA DELEGAÇÃO DE EVENTOS NO MODAL
+            document.getElementById('modal-detalhes-cliente').addEventListener('click', async (e) => {
+                const header = e.target.closest('th[data-sort-field]');
+                if (!header) return;
+
+                const isItemTable = header.closest('#container-detalhes-itens');
+                const isTaskTable = header.closest('#container-detalhes-tarefas');
+                const field = header.dataset.sortField;
+
+                if (isItemTable) {
+                    if (modalItemSortState.field === field) {
+                        modalItemSortState.direction = modalItemSortState.direction === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        modalItemSortState.field = field;
+                        modalItemSortState.direction = 'asc';
+                    }
+                    await setDoc(userPrefsDoc, { modalItemSort: modalItemSortState }, { merge: true });
+                    // Re-renderiza o modal inteiro para aplicar a ordenação
+                    openDetalhesClienteModal(clientModalCalendarState.clienteId);
+                } else if (isTaskTable) {
+                    if (modalTaskSortState.field === field) {
+                        modalTaskSortState.direction = modalTaskSortState.direction === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        modalTaskSortState.field = field;
+                        modalTaskSortState.direction = 'asc';
+                    }
+                    await setDoc(userPrefsDoc, { modalTaskSort: modalTaskSortState }, { merge: true });
+                    // Re-renderiza apenas a view de tarefas dentro do modal
+                    renderDetalhesClienteTarefasView(clientModalCalendarState.clienteId);
+                }
             });
 
             onSnapshot(clientesCol, (snapshot) => {
