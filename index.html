@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Compra e Controle de Obras</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -879,23 +882,17 @@
                             <p class="text-secondary text-sm md:text-base">Crie e organize as tarefas dos seus projetos.</p>
                         </div>
                         <div class="flex items-center space-x-4">
-    <div class="isolate inline-flex rounded-md shadow-sm">
-        <button type="button" id="btn-view-task-table" class="relative task-view-btn inline-flex items-center rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10 view-btn-active">
-            <i class="fa-solid fa-table-list"></i>
-        </button>
-        <button type="button" id="btn-view-task-kanban" class="relative task-view-btn -ml-px inline-flex items-center bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10">
-            <i class="fa-solid fa-grip"></i>
-        </button>
-        <button type="button" id="btn-view-task-client" class="relative task-view-btn -ml-px inline-flex items-center bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10">
-            <i class="fa-solid fa-user-tag"></i>
-        </button>
-        <button type="button" id="btn-view-task-calendar" class="relative task-view-btn -ml-px inline-flex items-center rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10">
-            <i class="fa-solid fa-calendar-days"></i>
-        </button>
-    </div>
-                            <button id="btn-abrir-modal-tarefa" class="btn-primary inline-flex items-center px-4 py-2">
-                                <i class="fa-solid fa-plus mr-2"></i> Criar Tarefa
-                            </button>
+                            <div class="flex space-x-2">
+                                <button id="btn-export-pdf" class="btn-secondary inline-flex items-center px-4 py-2 text-sm" title="Exportar para PDF">
+                                    <i class="fa-solid fa-file-pdf mr-2 text-red-600"></i> PDF
+                                </button>
+                                <button id="btn-export-excel" class="btn-secondary inline-flex items-center px-4 py-2 text-sm" title="Exportar para Excel">
+                                    <i class="fa-solid fa-file-excel mr-2 text-green-700"></i> Excel
+                                </button>
+                                <button id="btn-abrir-modal-tarefa" class="btn-primary inline-flex items-center px-4 py-2">
+                                    <i class="fa-solid fa-plus mr-2"></i> Criar Tarefa
+                                </button>
+                            </div>
                         </div>
                     </header>
 
@@ -1526,6 +1523,41 @@
     </div>
 
     <!-- NEW: Confirmation Modal for Deletion -->
+    <div id="modal-export-pdf-options" class="modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 invisible opacity-0 z-[60]">
+        <div class="modal-content rounded-lg shadow-xl w-full max-w-md p-6 transform scale-95 content-card">
+            <h3 class="text-xl md:text-2xl font-medium mb-6 text-primary">Selecionar Colunas para o PDF</h3>
+            <div id="pdf-columns-form" class="grid grid-cols-2 gap-4 text-base">
+                <label class="flex items-center space-x-3 cursor-pointer">
+                    <input type="checkbox" name="pdf-column" value="titulo" class="h-5 w-5 rounded border-gray-300 text-accent-brown focus:ring-accent-brown" checked>
+                    <span>Tarefa</span>
+                </label>
+                <label class="flex items-center space-x-3 cursor-pointer">
+                    <input type="checkbox" name="pdf-column" value="cliente" class="h-5 w-5 rounded border-gray-300 text-accent-brown focus:ring-accent-brown" checked>
+                    <span>Cliente</span>
+                </label>
+                <label class="flex items-center space-x-3 cursor-pointer">
+                    <input type="checkbox" name="pdf-column" value="colaborador" class="h-5 w-5 rounded border-gray-300 text-accent-brown focus:ring-accent-brown" checked>
+                    <span>Colaborador</span>
+                </label>
+                 <label class="flex items-center space-x-3 cursor-pointer">
+                    <input type="checkbox" name="pdf-column" value="fornecedor" class="h-5 w-5 rounded border-gray-300 text-accent-brown focus:ring-accent-brown" checked>
+                    <span>Fornecedor</span>
+                </label>
+                <label class="flex items-center space-x-3 cursor-pointer">
+                    <input type="checkbox" name="pdf-column" value="datas" class="h-5 w-5 rounded border-gray-300 text-accent-brown focus:ring-accent-brown" checked>
+                    <span>Datas</span>
+                </label>
+                <label class="flex items-center space-x-3 cursor-pointer">
+                    <input type="checkbox" name="pdf-column" value="status" class="h-5 w-5 rounded border-gray-300 text-accent-brown focus:ring-accent-brown" checked>
+                    <span>Status</span>
+                </label>
+            </div>
+            <div class="mt-8 flex justify-end space-x-3">
+                <button type="button" id="btn-cancel-export-pdf" class="btn-secondary py-2 px-4">Cancelar</button>
+                <button type="button" id="btn-confirm-export-pdf" class="btn-primary py-2 px-4">Gerar Relatório</button>
+            </div>
+        </div>
+    </div>
     <div id="confirmation-modal" class="modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 invisible opacity-0 z-[10000]">
         <div class="modal-content rounded-lg shadow-xl w-full max-w-sm p-6 transform scale-95 content-card bg-red-100 border-red-400 text-red-800">
             <h3 class="text-xl md:text-2xl font-medium mb-4 text-red-900 flex items-center justify-center">
@@ -4355,6 +4387,95 @@ document.getElementById('subtarefas-container').addEventListener('click', e => {
             renderDashboardCalendar();
         });
 
+        // --- EXPORT FUNCTIONS ---
+        const getFilteredTasks = () => {
+            const filtroGeral = document.getElementById('filtro-tarefa-geral').value.toLowerCase();
+            const filtroCliente = document.getElementById('filtro-tarefa-cliente').value;
+            const filtroColaborador = document.getElementById('filtro-tarefa-colaborador').value;
+            const filtroStatus = document.getElementById('filtro-tarefa-status').value;
+
+            return allTarefas.filter(tarefa => {
+                const matchGeral = !filtroGeral || (tarefa.titulo && tarefa.titulo.toLowerCase().includes(filtroGeral));
+                const matchCliente = !filtroCliente || tarefa.clienteId === filtroCliente;
+                const matchColaborador = !filtroColaborador || tarefa.colaboradorId === filtroColaborador;
+                const matchStatus = !filtroStatus || tarefa.status === filtroStatus;
+                return matchGeral && matchCliente && matchColaborador && matchStatus;
+            });
+        };
+
+        const exportarTarefasParaExcel = () => {
+            const tasksToExport = getFilteredTasks();
+            if (tasksToExport.length === 0) {
+                alert("Não há tarefas para exportar com os filtros atuais.");
+                return;
+            }
+
+            const data = tasksToExport.map(task => ({
+                'Tarefa': task.titulo,
+                'Cliente': allClientes.find(c => c.id === task.clienteId)?.nome || 'N/A',
+                'Colaborador': allColaboradores.find(c => c.id === task.colaboradorId)?.nome || 'N/A',
+                'Fornecedor': allFornecedores.find(f => f.id === task.fornecedorId)?.nome || 'N/A',
+                'Data de Início': formatDate(task.dataInicio),
+                'Data de Fim': formatDate(task.dataFim),
+                'Status': task.status
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Tarefas");
+
+            // Ajusta a largura das colunas
+            worksheet["!cols"] = [
+                { wch: 40 }, { wch: 25 }, { wch: 25 }, { wch: 25 },
+                { wch: 15 }, { wch: 15 }, { wch: 15 }
+            ];
+
+            XLSX.writeFile(workbook, "Relatorio_Tarefas.xlsx");
+        };
+
+    const exportarTarefasParaPDF = (selectedColumns) => {
+        const tasksToExport = getFilteredTasks();
+        if (tasksToExport.length === 0) {
+            alert("Não há tarefas para exportar com os filtros atuais.");
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+        const logoBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAASFBMVEX///8AAADz8/P8/Pz39/fw8PDc3Nzf39/k5OTY2NjS0tL09PSvr69qamqcnJxbW1uJiYlOTk5ISEg+Pj4xMTFmZmZ3d3cMDAyep8ukAAAAAXRSTlMAQObYZgAAA9lJREFUeNrt3dFu2zAQBuAQA3bAARxw4P//2Yltt7Yk6coGg0C/p1J5ko0kTdv2k4gAAAAAAAAAAAAAAAD+q7G7K3e7h+7t7sLgdtd3bu2O+soH31n3tUf3tne4F/3PrtvTvd3b3eM6/0H3dg+ndrvz3v0F3dvdx7Y7M7t3wL3de93bPd3bPcTdfeiu7gYAAAAAAAAAAAAAAAD+p2N3V+52D93b3YXB7a7v3NoduXJ/W+6s+9qj++s73Av9z67b073d293j+hPdrXW789617urdv3d397HtzozdO+Debn33duev+9p3dDcAAAAAAAAAAAAAAADgn3G3YnbvgHu79d3bnu5tj93b7rR7/Xj3dhcGW2899y5s3oF7++t3dHe751v3dvd19273dP/89t1/0L3d293bnXfX/Qfd2z3c7t617gEAAAAAAAAAAAAAAAD/s3fb/W53+R3kbtv/8sO1O67dHXdvD7d7fN29+j1279o9/vHh7O7l3e2e/e8F7+7u4e7t3u7d3f1fd+/2dLe72z3+uNu7+7vbPQAAAAAAAAAAAAAAAOC/cXe7h7u3e7t3d/d+93YPd283AAAAAAAAAADg33C3e3y43R3e3e2O7+7u7t0+7N5u9wAAAAAAAAAAAPhb3N3dvd293Xv+x93dvd17fLjdvd3h3e2e/4d3999cd/+43Z3u7d7u/q/dnaO72z0AAAAAAAAAAAAAAADgn3O3e3x4dzf3dvfubm73uLvbvd3t7gHvgXtrd/fubt/e7rV7u3sAAAAAAAAAAAAAAAD+F+4WvN29e/f7eHe3e+g+fXf39ncv9u5t97Z7fN3bPf7x4ezu5d3tnv3vBe/u7uHu7d7u3d39X3fv9nS3u9s9/rjb2+1u9/j7dDcA9xYAAAAAAAAAAAAAAIC/xf3Wdrd7/P349nbfx2t3XB/m7o17az+1e/z98O7+8e5O93T/8/fde93bPcrd33dvh3vA+/u4uwcAAAAAAAAAAAAAAAD8T+7Wuzv96N496J7e7qH7eHe3O9zt7nbn7q3d0T0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAn8+9X9+de0d3dzd3v7t7fN11dx/1bne7o3t3V+6Oe7s73Iu3e7r7tXt4dzf/3u5e7d4d3t3v0R1gd/9Ad/+4uwcAAAAAAAAAAAAAAAD8t/gD6hLhYw2xmtMAAAAASUVORK5CYII=';
+
+        const columnMap = {
+            titulo: { header: 'Tarefa', dataKey: task => task.titulo || 'Sem título' },
+            cliente: { header: 'Cliente', dataKey: task => allClientes.find(c => c.id === task.clienteId)?.nome || 'N/A' },
+            colaborador: { header: 'Colaborador', dataKey: task => allColaboradores.find(c => c.id === task.colaboradorId)?.nome || 'N/A' },
+            fornecedor: { header: 'Fornecedor', dataKey: task => allFornecedores.find(f => f.id === task.fornecedorId)?.nome || 'N/A' },
+            datas: { header: 'Datas', dataKey: task => `${formatDate(task.dataInicio)} a ${formatDate(task.dataFim)}` },
+            status: { header: 'Status', dataKey: task => task.status }
+        };
+
+        const tableHead = [selectedColumns.map(key => columnMap[key].header)];
+        const tableBody = tasksToExport.map(task => selectedColumns.map(key => columnMap[key].dataKey(task)));
+        const totalPagesExp = '{total_pages_count_string}';
+        
+        doc.autoTable({
+            head: tableHead,
+            body: tableBody,
+            startY: 32, theme: 'grid', headStyles: { fillColor: [88, 129, 87], textColor: [255, 255, 255], fontStyle: 'bold' },
+            didDrawPage: function (data) {
+                try { doc.addImage(logoBase64, 'PNG', data.settings.margin.left, 10, 40, 10); } catch (e) { console.error("Erro ao adicionar a imagem (base64) ao PDF:", e); }
+                doc.setFontSize(18); doc.setTextColor(30, 30, 30); doc.text('Relatório de Acompanhamento de Tarefas', doc.internal.pageSize.getWidth() / 2, 16, { align: 'center' });
+                doc.setFontSize(10); doc.text(`Data de Emissão: ${new Date().toLocaleDateString('pt-BR')}`, doc.internal.pageSize.getWidth() - data.settings.margin.right, 18, { align: 'right' });
+                doc.setLineWidth(0.1); doc.line(data.settings.margin.left, 25, doc.internal.pageSize.getWidth() - data.settings.margin.right, 25);
+                let footerStr = "Página " + doc.internal.getNumberOfPages(); if (typeof doc.putTotalPages === 'function') { footerStr = footerStr + " de " + totalPagesExp; }
+                doc.setFontSize(9); doc.setTextColor(150); doc.text(footerStr, data.settings.margin.left, doc.internal.pageSize.getHeight() - 10);
+            },
+            margin: { top: 30 }
+        });
+        
+        if (typeof doc.putTotalPages === 'function') { doc.putTotalPages(totalPagesExp); }
+        doc.save('Relatorio_Tarefas.pdf');
+    };
+
         // --- CHATBOT TENKY.AI LOGIC ---
         const chatbotWindow = document.getElementById('chatbot-window');
         const chatbotIcon = document.getElementById('chatbot-icon');
@@ -4524,6 +4645,29 @@ document.getElementById('subtarefas-container').addEventListener('click', e => {
 
         // --- INITIALIZATION & REALTIME LISTENERS ---
         const startApp = async () => {
+            // MODIFIQUE este listener
+            document.getElementById('btn-export-pdf').addEventListener('click', () => {
+                openModal('modal-export-pdf-options');
+            });
+
+            // MANTENHA este listener
+            document.getElementById('btn-export-excel').addEventListener('click', exportarTarefasParaExcel);
+
+            // ADICIONE estes novos listeners para o novo modal
+            document.getElementById('btn-confirm-export-pdf').addEventListener('click', () => {
+                const selectedColumns = Array.from(document.querySelectorAll('#pdf-columns-form input[type="checkbox"]:checked'))
+                                             .map(cb => cb.value);
+                if (selectedColumns.length === 0) {
+                    alert("Por favor, selecione pelo menos uma coluna para incluir no relatório.");
+                    return;
+                }
+                exportarTarefasParaPDF(selectedColumns);
+                closeModal('modal-export-pdf-options');
+            });
+
+            document.getElementById('btn-cancel-export-pdf').addEventListener('click', () => {
+                closeModal('modal-export-pdf-options');
+            });
             const urlParams = new URLSearchParams(window.location.search);
             const nomeResponsavel = urlParams.get('responsavel');
             
