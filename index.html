@@ -820,13 +820,48 @@
                                     <tr>
                                         <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider w-10"></th> <!-- Checkbox Header -->
                                         <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Nº</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort-field="clienteId">Cliente <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort-field="servico">Serviço/Produto <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort-field="ambiente">Ambiente <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort-field="responsavel">Responsável <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort-field="inicioPrevisto">Datas Previstas <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort-field="duracao">Duração <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort-field="status">Status <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort-field="clienteId">
+                                            <div class="flex items-center justify-between">
+                                                <span>Cliente</span>
+                                                <i class="fa-solid fa-sort text-gray-400"></i>
+                                            </div>
+                                        </th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort-field="servico">
+                                            <div class="flex items-center justify-between">
+                                                <span>Serviço/Produto</span>
+                                                <i class="fa-solid fa-sort text-gray-400"></i>
+                                            </div>
+                                        </th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort-field="ambiente">
+                                            <div class="flex items-center justify-between">
+                                                <span>Ambiente</span>
+                                                <i class="fa-solid fa-sort text-gray-400"></i>
+                                            </div>
+                                        </th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort-field="responsavel">
+                                            <div class="flex items-center justify-between">
+                                                <span>Responsável</span>
+                                                <i class="fa-solid fa-sort text-gray-400"></i>
+                                            </div>
+                                        </th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort-field="inicioPrevisto">
+                                            <div class="flex items-center justify-between">
+                                                <span>Datas Previstas</span>
+                                                <i class="fa-solid fa-sort text-gray-400"></i>
+                                            </div>
+                                        </th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort-field="duracao">
+                                            <div class="flex items-center justify-between">
+                                                <span>Duração</span>
+                                                <i class="fa-solid fa-sort text-gray-400"></i>
+                                            </div>
+                                        </th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort-field="status">
+                                            <div class="flex items-center justify-between">
+                                                <span>Status</span>
+                                                <i class="fa-solid fa-sort text-gray-400"></i>
+                                            </div>
+                                        </th>
                                         <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider">Ações</th>
                                     </tr>
                                 </thead>
@@ -1391,11 +1426,36 @@
                         <table class="min-w-full">
                              <thead>
                                 <tr>
-                                    <th class="px-2 py-2 text-left text-xs font-medium uppercase w-2/5 cursor-pointer hover:bg-gray-100" data-sort-field="servico">Item <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
-                                    <th class="px-2 py-2 text-left text-xs font-medium uppercase w-2/5 cursor-pointer hover:bg-gray-100" data-sort-field="inicioPrevisto">Datas <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
-                                    <th class="px-2 py-2 text-left text-xs font-medium uppercase cursor-pointer hover:bg-gray-100" data-sort-field="valor">Valor <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
-                                    <th class="px-2 py-2 text-left text-xs font-medium uppercase cursor-pointer hover:bg-gray-100" data-sort-field="percentual">% Orçam. <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
-                                    <th class="px-2 py-2 text-left text-xs font-medium uppercase cursor-pointer hover:bg-gray-100" data-sort-field="status">Status <i class="fa-solid fa-sort text-gray-400 ml-1"></i></th>
+                                     <th class="px-2 py-2 text-left text-xs font-medium uppercase w-2/5 cursor-pointer hover:bg-gray-100" data-sort-field="servico">
+                                         <div class="flex items-center justify-between">
+                                             <span>Item</span>
+                                             <i class="fa-solid fa-sort text-gray-400"></i>
+                                         </div>
+                                     </th>
+                                     <th class="px-2 py-2 text-left text-xs font-medium uppercase w-2/5 cursor-pointer hover:bg-gray-100" data-sort-field="inicioPrevisto">
+                                         <div class="flex items-center justify-between">
+                                             <span>Datas</span>
+                                             <i class="fa-solid fa-sort text-gray-400"></i>
+                                         </div>
+                                     </th>
+                                     <th class="px-2 py-2 text-left text-xs font-medium uppercase cursor-pointer hover:bg-gray-100" data-sort-field="valor">
+                                         <div class="flex items-center justify-between">
+                                             <span>Valor</span>
+                                             <i class="fa-solid fa-sort text-gray-400"></i>
+                                         </div>
+                                     </th>
+                                     <th class="px-2 py-2 text-left text-xs font-medium uppercase cursor-pointer hover:bg-gray-100" data-sort-field="percentual">
+                                         <div class="flex items-center justify-between">
+                                             <span>% Orçam.</span>
+                                             <i class="fa-solid fa-sort text-gray-400"></i>
+                                         </div>
+                                     </th>
+                                     <th class="px-2 py-2 text-left text-xs font-medium uppercase cursor-pointer hover:bg-gray-100" data-sort-field="status">
+                                         <div class="flex items-center justify-between">
+                                             <span>Status</span>
+                                             <i class="fa-solid fa-sort text-gray-400"></i>
+                                         </div>
+                                     </th>
                                     <th class="px-2 py-2 text-left text-xs font-medium uppercase">Ações</th>
                                 </tr>
                             </thead>
