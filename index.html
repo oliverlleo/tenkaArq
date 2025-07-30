@@ -889,12 +889,24 @@
                                     <thead>
         <tr>
             <th class="w-10"></th>
-            <th>Tarefa</th>
-            <th>Cliente</th>
-            <th>Colaborador</th>
-            <th>Fornecedor</th>
-            <th>Datas</th>
-            <th>Status</th>
+            <th class="cursor-pointer hover:bg-gray-100" data-sort-field="titulo">
+                Tarefa <i class="fa-solid fa-sort text-gray-400 ml-1"></i>
+            </th>
+            <th class="cursor-pointer hover:bg-gray-100" data-sort-field="clienteId">
+                Cliente <i class="fa-solid fa-sort text-gray-400 ml-1"></i>
+            </th>
+            <th class="cursor-pointer hover:bg-gray-100" data-sort-field="colaboradorId">
+                Colaborador <i class="fa-solid fa-sort text-gray-400 ml-1"></i>
+            </th>
+            <th class="cursor-pointer hover:bg-gray-100" data-sort-field="fornecedorId">
+                Fornecedor <i class="fa-solid fa-sort text-gray-400 ml-1"></i>
+            </th>
+            <th class="cursor-pointer hover:bg-gray-100" data-sort-field="dataInicio">
+                Datas <i class="fa-solid fa-sort text-gray-400 ml-1"></i>
+            </th>
+            <th class="cursor-pointer hover:bg-gray-100" data-sort-field="status">
+                Status <i class="fa-solid fa-sort text-gray-400 ml-1"></i>
+            </th>
             <th>Ações</th>
         </tr>
     </thead>
@@ -1500,7 +1512,7 @@
     <script type="module">
         // Importações do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, onSnapshot, doc, setDoc, deleteDoc, query, where, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, onSnapshot, doc, setDoc, getDoc, deleteDoc, query, where, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Configuração do Firebase
         const firebaseConfig = {
@@ -1525,9 +1537,11 @@
         const tarefasCol = collection(db, 'tarefas');
         const colaboradoresCol = collection(db, 'colaboradores');
         const alertasCol = collection(db, 'alertas');
+        const userPrefsDoc = doc(db, 'configuracoes', 'user_prefs');
 
 
         // Estado da Aplicação
+        let taskSortState = { field: 'dataInicio', direction: 'desc' }; // Um padrão inicial razoável
         let allClientes = [];
         let allFornecedores = [];
         let allCategorias = [];
@@ -1546,7 +1560,6 @@
 
         // Variáveis para o modal de confirmação
         let confirmCallback = null;
-let conversationHistory = [];
 
         // Variável para armazenar o ID da compra selecionada para edição
         let selectedCompraId = null;
@@ -1859,100 +1872,152 @@ let conversationHistory = [];
         document.getElementById('btn-task-view-table-modal').addEventListener('click', () => renderContent('table'));
         document.getElementById('btn-task-view-kanban-modal').addEventListener('click', () => renderContent('kanban'));
     };
-        const renderTabelaTarefas = () => {
-    const tbody = document.getElementById('tabela-tarefas');
-    if (!tbody) return;
-    tbody.innerHTML = '';
+    const renderTabelaTarefas = () => {
+        const tbody = document.getElementById('tabela-tarefas');
+        if (!tbody) return;
+        tbody.innerHTML = '';
 
-    const filtroGeral = document.getElementById('filtro-tarefa-geral').value.toLowerCase();
-    const filtroCliente = document.getElementById('filtro-tarefa-cliente').value;
-    const filtroColaborador = document.getElementById('filtro-tarefa-colaborador').value;
-    const filtroStatus = document.getElementById('filtro-tarefa-status').value;
+        // --- LÓGICA DE FILTRAGEM (EXISTENTE) ---
+        const filtroGeral = document.getElementById('filtro-tarefa-geral').value.toLowerCase();
+        // ... (resto da lógica de filtragem existente) ...
+        const filteredTarefas = allTarefas.filter(tarefa => {
+            // ... (código de filtragem existente aqui) ...
+            const matchGeral = !filtroGeral || (tarefa.titulo && tarefa.titulo.toLowerCase().includes(filtroGeral)) || (tarefa.descricao && tarefa.descricao.toLowerCase().includes(filtroGeral));
+            const filtroCliente = document.getElementById('filtro-tarefa-cliente').value;
+            const filtroColaborador = document.getElementById('filtro-tarefa-colaborador').value;
+            const filtroStatus = document.getElementById('filtro-tarefa-status').value;
 
-    const filteredTarefas = allTarefas.filter(tarefa => {
-        const matchGeral = !filtroGeral || (tarefa.titulo && tarefa.titulo.toLowerCase().includes(filtroGeral)) || (tarefa.descricao && tarefa.descricao.toLowerCase().includes(filtroGeral));
-        const matchCliente = !filtroCliente || tarefa.clienteId === filtroCliente;
-        const matchColaborador = !filtroColaborador || tarefa.colaboradorId === filtroColaborador;
-        const matchStatus = !filtroStatus || tarefa.status === filtroStatus;
-        return matchGeral && matchCliente && matchColaborador && matchStatus;
-    });
+            const matchCliente = !filtroCliente || tarefa.clienteId === filtroCliente;
+            const matchColaborador = !filtroColaborador || tarefa.colaboradorId === filtroColaborador;
+            const matchStatus = !filtroStatus || tarefa.status === filtroStatus;
+            return matchGeral && matchCliente && matchColaborador && matchStatus;
+        });
 
-    if (filteredTarefas.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-secondary">Nenhuma tarefa encontrada.</td></tr>`;
-        return;
-    }
+        // --- NOVA LÓGICA DE ORDENAÇÃO ---
+        if (taskSortState.field) {
+            filteredTarefas.sort((a, b) => {
+                let valA, valB;
 
-    filteredTarefas.forEach(tarefa => {
-        const cliente = allClientes.find(c => c.id === tarefa.clienteId);
-        const colaborador = allColaboradores.find(c => c.id === tarefa.colaboradorId);
-        const fornecedor = allFornecedores.find(f => f.id === tarefa.fornecedorId);
-        const statusMap = { 'Pendente': { text: 'Pendente', color: 'bg-[var(--status-nao-iniciado-bg)] text-[var(--status-nao-iniciado-text)]' }, 'Em Andamento': { text: 'Em Andamento', color: 'bg-[var(--status-em-andamento-bg)] text-[var(--status-em-andamento-text)]' }, 'Finalizado': { text: 'Finalizado', color: 'bg-[var(--status-finalizado-bg)] text-[var(--status-finalizado-text)]' }, };
-        const statusInfo = statusMap[tarefa.status] || statusMap['Pendente'];
-        const hasSubtarefas = tarefa.subtarefas && tarefa.subtarefas.length > 0;
-        const descricaoTexto = (tarefa.descricao || '').replace(/<[^>]*>/g, '');
+                // Para campos que são IDs, precisamos buscar o nome correspondente para uma ordenação alfabética correta
+                if (taskSortState.field === 'clienteId') {
+                    valA = allClientes.find(c => c.id === a.clienteId)?.nome || '';
+                    valB = allClientes.find(c => c.id === b.clienteId)?.nome || '';
+                } else if (taskSortState.field === 'colaboradorId') {
+                    valA = allColaboradores.find(c => c.id === a.colaboradorId)?.nome || '';
+                    valB = allColaboradores.find(c => c.id === b.colaboradorId)?.nome || '';
+                } else if (taskSortState.field === 'fornecedorId') {
+                    valA = allFornecedores.find(f => f.id === a.fornecedorId)?.nome || '';
+                    valB = allFornecedores.find(f => f.id === b.fornecedorId)?.nome || '';
+                } else {
+                    valA = a[taskSortState.field] || '';
+                    valB = b[taskSortState.field] || '';
+                }
+                
+                // Converte para minúsculas se for string
+                if (typeof valA === 'string') valA = valA.toLowerCase();
+                if (typeof valB === 'string') valB = valB.toLowerCase();
 
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>
-                ${hasSubtarefas ? '<button class="expand-toggle text-accent-brown p-2"><i class="fa-solid fa-chevron-right expand-icon"></i></button>' : ''}
-            </td>
-            <td class="align-middle">
-                <div class="font-medium text-primary truncate" title="${tarefa.titulo || ''}">${tarefa.titulo || 'Tarefa sem Título'}</div>
-                <div class="text-sm text-secondary truncate" title="${descricaoTexto}">${descricaoTexto || 'Sem descrição'}</div>
-            </td>
-            <td class="text-sm text-secondary">${cliente?.nome || 'N/A'}</td>
-            <td class="text-sm text-secondary">${colaborador?.nome || 'N/A'}</td>
-            <td class="text-sm text-secondary">${fornecedor?.nome || 'N/A'}</td>
-            <td class="text-sm text-secondary">${formatDate(tarefa.dataInicio)} - ${formatDate(tarefa.dataFim)}</td>
-            <td><span class="status-badge ${statusInfo.color}">${statusInfo.text}</span></td>
-            <td class="text-right text-sm font-medium">
-                <div class="flex items-center space-x-3 text-lg">
-                    ${tarefa.status === 'Pendente' ? `<button title="Iniciar Tarefa" data-id="${tarefa.id}" data-status="Em Andamento" class="btn-status-change-tarefa text-blue-600 hover:text-blue-800"><i class="fa-solid fa-play"></i></button>` : ''}
-                    ${tarefa.status === 'Em Andamento' ? `<button title="Finalizar Tarefa" data-id="${tarefa.id}" data-status="Finalizado" class="btn-status-change-tarefa text-green-600 hover:text-green-800"><i class="fa-solid fa-check-double"></i></button>` : ''}
-                    <button title="Editar Tarefa" data-id="${tarefa.id}" class="btn-edit-tarefa text-blue-600 hover:text-blue-800"><i class="fa-solid fa-edit"></i></button>
-                    <button title="Excluir Tarefa" data-id="${tarefa.id}" data-collection="tarefas" class="btn-delete-item text-gray-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
-                </div>
-            </td>
-        `;
-        tbody.appendChild(row);
-
-        if (hasSubtarefas) {
-            const subtaskRow = document.createElement('tr');
-            subtaskRow.className = 'task-row-expandable';
-            const subtarefasHTML = tarefa.subtarefas.map(st => `
-        <div class="subtarefa-item">
-            <div class="flex items-center gap-3 py-1">
-                <input type="checkbox" data-tarefa-id="${tarefa.id}" data-subtarefa-id="${st.id}" class="subtarefa-checkbox-tabela" ${st.concluida ? 'checked' : ''}>
-                <span class="${st.concluida ? 'subtarefa-concluida' : ''}">${st.texto}</span>
-                ${st.lembreteData ? `<span class="text-xs text-accent-brown ml-auto"><i class="fa-regular fa-bell"></i> ${formatDate(st.lembreteData)}</span>` : ''}
-            </div>
-        </div>
-    `).join('');
-            subtaskRow.innerHTML = `<td colspan="9">
-            <div class="subtask-wrapper">${subtarefasHTML}</div>
-        </td>`;
-            tbody.appendChild(subtaskRow);
-            if (expandedTaskRows.has(tarefa.id)) {
-            subtaskRow.classList.add('visible');
-            row.querySelector('.expand-icon').classList.add('rotated');
-        }
-            row.querySelector('.expand-toggle').addEventListener('click', (e) => {
-                const icon = e.currentTarget.querySelector('.expand-icon');
-        const isExpanded = expandedTaskRows.has(tarefa.id);
-
-        if (isExpanded) {
-            expandedTaskRows.delete(tarefa.id);
-            icon.classList.remove('rotated');
-            subtaskRow.classList.remove('visible');
-        } else {
-            expandedTaskRows.add(tarefa.id);
-            icon.classList.add('rotated');
-            subtaskRow.classList.add('visible');
-        }
+                let comparison = 0;
+                if (valA > valB) {
+                    comparison = 1;
+                } else if (valA < valB) {
+                    comparison = -1;
+                }
+                
+                return taskSortState.direction === 'desc' ? comparison * -1 : comparison;
             });
         }
-    });
-};
+
+        // --- ATUALIZAÇÃO DOS ÍCONES DOS CABEÇALHOS ---
+        document.querySelectorAll('#tasks-table-view th[data-sort-field]').forEach(header => {
+            const icon = header.querySelector('i');
+            const field = header.dataset.sortField;
+            icon.className = 'fa-solid fa-sort text-gray-400 ml-1'; // Reset
+            if (taskSortState.field === field) {
+                icon.className = taskSortState.direction === 'asc' 
+                    ? 'fa-solid fa-sort-up text-accent-brown ml-1' 
+                    : 'fa-solid fa-sort-down text-accent-brown ml-1';
+            }
+        });
+
+        if (filteredTarefas.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-secondary">Nenhuma tarefa encontrada.</td></tr>`;
+            return;
+        }
+
+        // --- LÓGICA DE RENDERIZAÇÃO DAS LINHAS (EXISTENTE) ---
+        // O código restante da função (o loop forEach) permanece o mesmo.
+        filteredTarefas.forEach(tarefa => {
+            const cliente = allClientes.find(c => c.id === tarefa.clienteId);
+            const colaborador = allColaboradores.find(c => c.id === tarefa.colaboradorId);
+            const fornecedor = allFornecedores.find(f => f.id === tarefa.fornecedorId);
+            const statusMap = { 'Pendente': { text: 'Pendente', color: 'bg-[var(--status-nao-iniciado-bg)] text-[var(--status-nao-iniciado-text)]' }, 'Em Andamento': { text: 'Em Andamento', color: 'bg-[var(--status-em-andamento-bg)] text-[var(--status-em-andamento-text)]' }, 'Finalizado': { text: 'Finalizado', color: 'bg-[var(--status-finalizado-bg)] text-[var(--status-finalizado-text)]' }, };
+            const statusInfo = statusMap[tarefa.status] || statusMap['Pendente'];
+            const hasSubtarefas = tarefa.subtarefas && tarefa.subtarefas.length > 0;
+            const descricaoTexto = (tarefa.descricao || '').replace(/<[^>]*>/g, '');
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    ${hasSubtarefas ? '<button class="expand-toggle text-accent-brown p-2"><i class="fa-solid fa-chevron-right expand-icon"></i></button>' : ''}
+                </td>
+                <td class="align-middle">
+                    <div class="font-medium text-primary truncate" title="${tarefa.titulo || ''}">${tarefa.titulo || 'Tarefa sem Título'}</div>
+                    <div class="text-sm text-secondary truncate" title="${descricaoTexto}">${descricaoTexto || 'Sem descrição'}</div>
+                </td>
+                <td class="text-sm text-secondary">${cliente?.nome || 'N/A'}</td>
+                <td class="text-sm text-secondary">${colaborador?.nome || 'N/A'}</td>
+                <td class="text-sm text-secondary">${fornecedor?.nome || 'N/A'}</td>
+                <td class="text-sm text-secondary">${formatDate(tarefa.dataInicio)} - ${formatDate(tarefa.dataFim)}</td>
+                <td><span class="status-badge ${statusInfo.color}">${statusInfo.text}</span></td>
+                <td class="text-right text-sm font-medium">
+                    <div class="flex items-center space-x-3 text-lg">
+                        ${tarefa.status === 'Pendente' ? `<button title="Iniciar Tarefa" data-id="${tarefa.id}" data-status="Em Andamento" class="btn-status-change-tarefa text-blue-600 hover:text-blue-800"><i class="fa-solid fa-play"></i></button>` : ''}
+                        ${tarefa.status === 'Em Andamento' ? `<button title="Finalizar Tarefa" data-id="${tarefa.id}" data-status="Finalizado" class="btn-status-change-tarefa text-green-600 hover:text-green-800"><i class="fa-solid fa-check-double"></i></button>` : ''}
+                        <button title="Editar Tarefa" data-id="${tarefa.id}" class="btn-edit-tarefa text-blue-600 hover:text-blue-800"><i class="fa-solid fa-edit"></i></button>
+                        <button title="Excluir Tarefa" data-id="${tarefa.id}" data-collection="tarefas" class="btn-delete-item text-gray-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(row);
+
+            if (hasSubtarefas) {
+                const subtaskRow = document.createElement('tr');
+                subtaskRow.className = 'task-row-expandable';
+                const subtarefasHTML = tarefa.subtarefas.map(st => `
+            <div class="subtarefa-item">
+                <div class="flex items-center gap-3 py-1">
+                    <input type="checkbox" data-tarefa-id="${tarefa.id}" data-subtarefa-id="${st.id}" class="subtarefa-checkbox-tabela" ${st.concluida ? 'checked' : ''}>
+                    <span class="${st.concluida ? 'subtarefa-concluida' : ''}">${st.texto}</span>
+                    ${st.lembreteData ? `<span class="text-xs text-accent-brown ml-auto"><i class="fa-regular fa-bell"></i> ${formatDate(st.lembreteData)}</span>` : ''}
+                </div>
+            </div>
+        `).join('');
+                subtaskRow.innerHTML = `<td colspan="9">
+                <div class="subtask-wrapper">${subtarefasHTML}</div>
+            </td>`;
+                tbody.appendChild(subtaskRow);
+                if (expandedTaskRows.has(tarefa.id)) {
+                subtaskRow.classList.add('visible');
+                row.querySelector('.expand-icon').classList.add('rotated');
+            }
+                row.querySelector('.expand-toggle').addEventListener('click', (e) => {
+                    const icon = e.currentTarget.querySelector('.expand-icon');
+            const isExpanded = expandedTaskRows.has(tarefa.id);
+
+            if (isExpanded) {
+                expandedTaskRows.delete(tarefa.id);
+                icon.classList.remove('rotated');
+                subtaskRow.classList.remove('visible');
+            } else {
+                expandedTaskRows.add(tarefa.id);
+                icon.classList.add('rotated');
+                subtaskRow.classList.add('visible');
+            }
+                });
+            }
+        });
+    };
 
         const renderKanbanView = () => {
             const kanbanBoard = document.getElementById('kanban-board');
@@ -4129,7 +4194,6 @@ document.getElementById('subtarefas-container').addEventListener('click', e => {
 
         chatbotCloseBtn.addEventListener('click', () => {
             chatbotWindow.classList.remove('visible');
-            conversationHistory = []; // Limpa o histórico ao fechar
         });
         
         chatbotIcon.addEventListener('mouseover', () => {
@@ -4208,132 +4272,80 @@ document.getElementById('subtarefas-container').addEventListener('click', e => {
                     terminoPrevisto: c.terminoPrevisto
                 };
             });
-    const detailedTarefas = allTarefas.map(t => {
-        const cliente = allClientes.find(cli => cli.id === t.clienteId);
-        const colaborador = allColaboradores.find(col => col.id === t.colaboradorId);
-        return {
-            titulo: t.titulo,
-            status: t.status,
-            cliente: cliente?.nome || 'N/A',
-            atribuida_a: colaborador?.nome || 'N/A',
-            dataInicio: t.dataInicio,
-            dataFim: t.dataFim
-        };
-    });
 
-    const detailedColaboradores = allColaboradores.map(c => ({
-        nome: c.nome,
-        categoria: c.categoria
-    }));
+            return `
+                Você é Tenky.Ai, um assessor virtual inteligente para um sistema de controle de obras.
+                Sua função é ser um assistente prestativo, informando, explicando e lembrando o usuário sobre os dados do sistema.
+                Seja conciso e amigável. Use os dados abaixo como contexto para responder.
+                Data e hora atual: ${new Date().toLocaleString('pt-BR')}
 
-    const detailedAlertas = allAlertas.filter(a => !a.lido).map(a => ({
-        titulo: a.titulo,
-        mensagem: a.mensagem,
-        data_do_evento_relacionado: a.dataEvento ? new Date(a.dataEvento.seconds * 1000).toLocaleDateString('pt-BR') : 'N/A'
-    }));
+                --- DADOS DO SISTEMA ---
+                - Total de Clientes: ${allClientes.length}
+                - Clientes (Detalhado): ${JSON.stringify(detailedClientes)}
 
-    return `
-        Você é Tenky.Ai, um assessor virtual inteligente para um sistema de controle de obras.
-        Sua função é ser um assistente prestativo, informando, explicando e lembrando o usuário sobre os dados do sistema.
-        Seja conciso e amigável. Use os dados abaixo como contexto para responder.
-        Data e hora atual: ${new Date().toLocaleString('pt-BR')}
+                - Total de Itens de Compra/Serviço: ${allCompras.length}
+                - Resumo de Status dos Itens: ${countStatus(allCompras) || 'Nenhum item cadastrado'}
+                - Compras/Serviços (Detalhado): ${JSON.stringify(detailedCompras)}
 
-        --- DADOS GERAIS DO SISTEMA ---
-        - Total de Clientes: ${allClientes.length}
-        - Total de Itens de Compra/Serviço: ${allCompras.length}
-        - Total de Tarefas: ${allTarefas.length}
-        - Total de Fornecedores: ${allFornecedores.length}
-        - Total de Colaboradores: ${allColaboradores.length}
-        - Total de Categorias: ${allCategorias.length}
-        - Alertas Ativos (Não lidos): ${detailedAlertas.length}
-
-        --- DETALHES ---
-        1. CLIENTES: ${JSON.stringify(detailedClientes)}
-        
-        2. COMPRAS/SERVIÇOS (Status: ${countStatus(allCompras) || 'Nenhum'}): ${JSON.stringify(detailedCompras)}
-
-        3. TAREFAS (Status: ${countStatus(allTarefas) || 'Nenhuma'}): ${JSON.stringify(detailedTarefas)}
-
-        4. FORNECEDORES: ${allFornecedores.map(f => f.nome).join(', ')}
-
-        5. CATEGORIAS: ${allCategorias.map(c => c.nome).join(', ')}
-
-        6. COLABORADORES: ${JSON.stringify(detailedColaboradores)}
-
-        7. ALERTAS ATIVOS: ${JSON.stringify(detailedAlertas)}
-        --- FIM DOS DADOS ---
-    `;
+                - Total de Fornecedores: ${allFornecedores.length}
+                - Fornecedores: ${allFornecedores.map(f => f.nome).join(', ')}
+                --- FIM DOS DADOS ---
+            `;
         };
 
-    chatbotForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const userInput = chatbotInput.value.trim();
-        if (!userInput) return;
+        chatbotForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userInput = chatbotInput.value.trim();
+            if (!userInput) return;
 
-        addMessage(userInput, 'user');
-        chatbotInput.value = '';
-        const loadingIndicator = addLoadingIndicator();
+            addMessage(userInput, 'user');
+            chatbotInput.value = '';
+            const loadingIndicator = addLoadingIndicator();
 
-        // Adiciona a mensagem do usuário ao histórico
-        conversationHistory.push({ role: 'user', parts: [{ text: userInput }] });
+            const xingamentos = ['porra', 'caralho', 'merda', 'puta', 'demonio', 'inferno', 'bosta', 'desgraça', 'animal', 'burro', 'idiota', 'imbecil', 'incopetente', 'babaca', 'otario', 'infeliz', 'desgraçado', 'babaca'];
+            const isXingo = xingamentos.some(word => userInput.toLowerCase().includes(word));
+            const botIcon = isXingo ? 'sad.png' : 'hello.png';
 
-        const xingamentos = ['porra', 'caralho', 'merda', 'puta', 'demonio', 'inferno', 'bosta', 'desgraça', 'animal', 'burro', 'idiota', 'imbecil', 'incopetente', 'babaca', 'otario', 'infeliz', 'desgraçado', 'babaca'];
-        const isXingo = xingamentos.some(word => userInput.toLowerCase().includes(word));
-        const botIcon = isXingo ? 'sad.png' : 'hello.png';
-
-        try {
-            const systemContext = getSystemContext();
-            
-            // Prepara o payload com o contexto do sistema E o histórico da conversa
-            const payload = {
-                contents: [
-                    ...conversationHistory // Adiciona todo o histórico aqui
-                ],
-                systemInstruction: { // O contexto do sistema agora vai aqui
-                    parts: [{
-                        text: systemContext
+            try {
+                const systemContext = getSystemContext();
+                const payload = {
+                    contents: [{
+                        parts: [{
+                            text: `${systemContext}\n\nPergunta do usuário: "${userInput}"`
+                        }]
                     }]
+                };
+
+                const response = await fetch(geminiApiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.statusText}`);
                 }
-            };
 
-            const response = await fetch(geminiApiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                throw new Error(`API Error: ${response.statusText}`);
-            }
-
-            const result = await response.json();
-            chatbotMessages.removeChild(loadingIndicator);
-            
-            if (result.candidates && result.candidates.length > 0) {
-                const botResponseText = result.candidates[0].content.parts[0].text;
-                addMessage(botResponseText, 'bot', botIcon);
+                const result = await response.json();
+                chatbotMessages.removeChild(loadingIndicator);
                 
-                // Adiciona a resposta do bot ao histórico
-                conversationHistory.push({ role: 'model', parts: [{ text: botResponseText }] });
+                if (result.candidates && result.candidates.length > 0) {
+                    const botResponse = result.candidates[0].content.parts[0].text;
+                    addMessage(botResponse, 'bot', botIcon);
+                } else {
+                    addMessage("Desculpe, não consegui processar sua solicitação no momento.", 'bot', botIcon);
+                }
 
-            } else {
-                const errorMessage = "Desculpe, não consegui processar sua solicitação no momento.";
-                addMessage(errorMessage, 'bot', botIcon);
-                conversationHistory.push({ role: 'model', parts: [{ text: errorMessage }] });
+            } catch (error) {
+                console.error("Erro ao contatar o Gemini:", error);
+                chatbotMessages.removeChild(loadingIndicator);
+                addMessage("Ops! Tive um problema para me conectar. Por favor, tente novamente mais tarde.", 'bot', 'sad.png');
             }
-
-        } catch (error) {
-            console.error("Erro ao contatar o Gemini:", error);
-            chatbotMessages.removeChild(loadingIndicator);
-            const errorMessage = "Ops! Tive um problema para me conectar. Por favor, tente novamente mais tarde.";
-            addMessage(errorMessage, 'bot', 'sad.png');
-            conversationHistory.push({ role: 'model', parts: [{ text: errorMessage }] });
-        }
-    });
+        });
 
 
         // --- INITIALIZATION & REALTIME LISTENERS ---
-        const startApp = () => {
+        const startApp = async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const nomeResponsavel = urlParams.get('responsavel');
             
@@ -4343,6 +4355,34 @@ document.getElementById('subtarefas-container').addEventListener('click', e => {
 
             handleTabSwitch('clientes'); // Default to clients tab on load
             renderDashboardCalendar();
+
+            // Busca as preferências de ordenação
+            const userPrefsSnapshot = await getDoc(userPrefsDoc);
+            if (userPrefsSnapshot.exists()) {
+                const prefs = userPrefsSnapshot.data();
+                if (prefs.taskSort) {
+                    taskSortState = prefs.taskSort;
+                }
+            }
+
+            // Adiciona os listeners para os cabeçalhos da tabela DEPOIS de carregar as prefs
+            document.querySelectorAll('#tasks-table-view th[data-sort-field]').forEach(header => {
+                header.addEventListener('click', async () => {
+                    const field = header.dataset.sortField;
+                    if (taskSortState.field === field) {
+                        // Alterna a direção se já estiver ordenando por este campo
+                        taskSortState.direction = taskSortState.direction === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        // Define um novo campo de ordenação
+                        taskSortState.field = field;
+                        taskSortState.direction = 'asc';
+                    }
+                    // Salva a nova preferência no Firebase
+                    await setDoc(userPrefsDoc, { taskSort: taskSortState }, { merge: true });
+                    // Re-renderiza a tabela
+                    renderTabelaTarefas();
+                });
+            });
 
             onSnapshot(clientesCol, (snapshot) => {
                 allClientes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
